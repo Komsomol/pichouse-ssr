@@ -22,11 +22,10 @@ export default defineEventHandler(async (event) => {
         findLatest = true; // Flag to find the latest release in TMDb
       }
 
-      // Fetch the movie from TMDb
       const tmdbMovieData = await fetchMovieFromTMDb(movie.Title, findLatest);
 
       if (tmdbMovieData) {
-        const { id: tmdbMovieId, original_title, release_date } = tmdbMovieData;
+        const { id: tmdbMovieId, original_title, release_date, overview } = tmdbMovieData; // Added overview
         const { videos, poster } = await fetchVideosAndPosterFromTMDb(tmdbMovieId);
 
         // Combine data from Picturehouse and TMDb
@@ -34,6 +33,7 @@ export default defineEventHandler(async (event) => {
           ...movie,
           original_title,    // Add original title from TMDb
           release_date,      // Add release date from TMDb
+          overview,          // Add overview from TMDb
           videos,            // Add videos from TMDb
           poster,            // Add poster from TMDb
         });

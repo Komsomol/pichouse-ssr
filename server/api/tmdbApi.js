@@ -33,6 +33,7 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
             id: matchedMovie.id,
             original_title: matchedMovie.original_title,
             release_date: matchedMovie.release_date,
+            overview: matchedMovie.overview // Include the overview
           };
         }
       }
@@ -50,6 +51,7 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
           id: latestMovie.id,
           original_title: latestMovie.original_title,
           release_date: latestMovie.release_date,
+          overview: latestMovie.overview // Include the overview
         };
       } else {
         // Otherwise, return the first movie match
@@ -58,6 +60,7 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
           id: movie.id,
           original_title: movie.original_title,
           release_date: movie.release_date,
+          overview: movie.overview // Include the overview
         };
       }
     } else {
@@ -96,4 +99,3 @@ export const fetchVideosAndPosterFromTMDb = async (movieId) => {
     return { videos: [], poster: null };
   }
 };
-

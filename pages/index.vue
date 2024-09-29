@@ -1,6 +1,13 @@
 <template>
-  <div>
+  <div class="container">
     <h1>Movies</h1>
+
+    <!-- Pagination Controls at the top -->
+    <div v-if="paginatedMovies.length" class="pagination">
+      <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+    </div>
 
     <!-- Loading state -->
     <div v-if="pending">
@@ -12,9 +19,9 @@
       <p>Failed to load movies: {{ error.message }}</p>
     </div>
 
-    <!-- Movies list -->
-    <div v-else-if="movies && movies.length">
-      <div v-for="movie in movies" :key="movie.ID" class="movie-block">
+    <!-- Movies list with pagination -->
+    <div v-else-if="paginatedMovies.length">
+      <div v-for="movie in paginatedMovies" :key="movie.ID" class="movie-block">
         <div class="movie-poster">
           <img v-if="movie.poster" :src="movie.poster" alt="Movie poster" />
         </div>
@@ -40,6 +47,13 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination Controls at the bottom (optional) -->
+      <div class="pagination">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+      </div>
     </div>
 
     <!-- No movies available -->
@@ -63,7 +77,7 @@ import useMovieList from '~/components/movies/MovieListScript.js';  // Adjust th
 import VideoModal from '~/components/movies/VideoModal.vue';  // Import the modal component
 
 // Destructure values returned by useMovieList
-const { movies, pending, error, getVideoUrl, formatDate } = useMovieList();
+const { paginatedMovies, pending, error, getVideoUrl, formatDate, currentPage, totalPages, goToPage } = useMovieList();
 
 // Modal state
 const isModalOpen = ref(false);
