@@ -30,9 +30,9 @@
           <h3 class="movie-title">{{ movie.original_title }}</h3>
 
           <div class="movie-details">
+            <p><strong>Overview:</strong> {{ movie.overview }}</p>
             <p><strong>Picturehouse Title:</strong> {{ movie.Title }}</p>
             <p><strong>Runtime:</strong> {{ movie.omdbData?.Runtime || movie.RunTime }} minutes</p>
-            <p><strong>MovieDB Rating:</strong> {{ movie.omdbData?.vote_average }}</p>
             <p><strong>Released:</strong> {{ formatDate(movie.release_date) }}</p>
           </div>
 
