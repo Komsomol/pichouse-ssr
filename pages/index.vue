@@ -1,7 +1,5 @@
 <template>
   <div class="container">
-    <h1>Movies</h1>
-
     <!-- Pagination Controls at the top -->
     <div v-if="paginatedMovies.length" class="pagination">
       <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
