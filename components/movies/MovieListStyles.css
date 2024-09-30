@@ -24,18 +24,22 @@ h1 {
 /* Styling for the main movie container */
 .movie-block {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevents wrapping */
   margin: 15px 0;
   padding: 20px;
   background-color: #1c1c1c;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  align-items: flex-start;
 }
 
 /* Movie Poster Styling */
+.movie-poster {
+  flex: 0 0 180px; /* Keeps poster size fixed */
+}
+
 .movie-poster img {
-  max-width: 180px;
-  height: auto;
+  max-width: 100%;
   border-radius: 4px;
   object-fit: cover;
 }
@@ -123,18 +127,19 @@ h1 {
   color: #fff;
 }
 
-/* Media query for responsiveness */
-@media (max-width: 1024px) {
-  .container {
-    padding: 15px;
+/* Maintain the same layout across all screen sizes */
+@media (max-width: 768px) {
+  .movie-block {
+    display: flex;
+    flex-direction: row; /* Maintain side-by-side layout */
   }
 
-  h1 {
-    font-size: 2.2rem;
+  .movie-poster {
+    flex: 0 0 150px; /* Adjust poster size for smaller screens */
   }
 
-  .movie-poster img {
-    max-width: 160px;
+  .movie-info {
+    margin-left: 15px; /* Slight reduction in margin for small screens */
   }
 
   .movie-title {
@@ -151,19 +156,18 @@ h1 {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .movie-block {
-    flex-direction: column;
-    padding: 15px;
+    display: flex;
+    flex-direction: row; /* Still maintain side-by-side layout */
+  }
+
+  .movie-poster {
+    flex: 0 0 120px; /* Further reduce poster size */
   }
 
   .movie-info {
-    margin-left: 0;
-    margin-top: 15px;
-  }
-
-  .movie-poster img {
-    max-width: 100%;
+    margin-left: 10px;
   }
 
   h1 {
@@ -175,31 +179,12 @@ h1 {
   }
 
   .movie-details p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .pagination button {
     padding: 8px 16px;
     font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.8rem;
-  }
-
-  .movie-title {
-    font-size: 1.2rem;
-  }
-
-  .movie-details p {
-    font-size: 0.85rem;
-  }
-
-  .pagination button {
-    padding: 7px 14px;
-    font-size: 0.8rem;
   }
 
   .pagination span {
