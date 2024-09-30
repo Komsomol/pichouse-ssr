@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "fetch-movies": "node ./test/generateMoviesJson.js",
+    "deploy": "npm run fetch-movies && nuxt generate && surge dist/ pichouse.surge.sh"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -16,5 +18,8 @@
     "nuxt": "^3.13.0",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "surge": "^0.24.6"
   }
 }

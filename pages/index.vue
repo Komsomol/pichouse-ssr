@@ -10,7 +10,7 @@
     </div>
 
     <!-- Loading state -->
-    <div v-if="pending">
+    <div v-if="loading">
       <p>Loading movies...</p>
     </div>
 
@@ -72,12 +72,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import useMovieList from '~/components/movies/MovieListScript.js';  // Adjust the import path accordingly
-import VideoModal from '~/components/movies/VideoModal.vue';  // Import the modal component
+import { ref, computed, onMounted } from 'vue';
+import VideoModal from '~/components/movies/VideoModal.vue'; // Import the modal component
 
-// Destructure values returned by useMovieList
-const { paginatedMovies, pending, error, getVideoUrl, formatDate, currentPage, totalPages, goToPage } = useMovieList();
+// Define reactive state
+const movies = ref([]);
+const paginatedMovies = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const currentPage = ref(1);
+const moviesPerPage = 10;
+const totalPages = ref(1);
 
 // Modal state
 const isModalOpen = ref(false);
@@ -87,6 +92,50 @@ const selectedVideoKey = ref(null);
 const openModal = (videoKey) => {
   selectedVideoKey.value = videoKey;
   isModalOpen.value = true;
+};
+
+// Function to format the release date
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
+
+// Fetch the movies from the static file when the component is mounted
+onMounted(async () => {
+  try {
+    const response = await fetch('/data/movies.json'); // Load movies.json from the public/data directory
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+    movies.value = data;
+
+    totalPages.value = Math.ceil(movies.value.length / moviesPerPage);
+    paginateMovies();
+    loading.value = false;
+  } catch (err) {
+    error.value = err;
+    loading.value = false;
+  }
+});
+
+// Function to paginate the movies
+const paginateMovies = () => {
+  const start = (currentPage.value - 1) * moviesPerPage;
+  const end = start + moviesPerPage;
+  paginatedMovies.value = movies.value.slice(start, end);
+};
+
+// Function to change the page
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    paginateMovies();
+  }
 };
 </script>
 
