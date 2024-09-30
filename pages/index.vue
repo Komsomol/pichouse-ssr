@@ -2,13 +2,13 @@
   <div class="container">
     <!-- Pagination Controls at the top -->
     <div v-if="paginatedMovies.length" class="pagination">
-      <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+      <button @click="goToPageAndScroll(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
       <span>Page {{ currentPage }} of {{ totalPages }}</span>
-      <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+      <button @click="goToPageAndScroll(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
     </div>
 
     <!-- Loading state -->
-    <div v-if="loading">
+    <div v-if="pending">
       <p>Loading movies...</p>
     </div>
 
@@ -48,9 +48,9 @@
 
       <!-- Pagination Controls at the bottom (optional) -->
       <div class="pagination">
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+        <button @click="goToPageAndScroll(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
         <span>Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+        <button @click="goToPageAndScroll(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
       </div>
     </div>
 
@@ -69,18 +69,14 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue';
-import VideoModal from '~/components/movies/VideoModal.vue'; // Import the modal component
 
-// Define reactive state
-const movies = ref([]);
-const paginatedMovies = ref([]);
-const loading = ref(true);
-const error = ref(null);
-const currentPage = ref(1);
-const moviesPerPage = 10;
-const totalPages = ref(1);
+<script setup>
+import { ref } from 'vue';
+import useMovieList from '~/components/movies/MovieListScript.js';  // Adjust the import path accordingly
+import VideoModal from '~/components/movies/VideoModal.vue';  // Import the modal component
+
+// Destructure values returned by useMovieList
+const { paginatedMovies, pending, error, getVideoUrl, formatDate, currentPage, totalPages, goToPage } = useMovieList();
 
 // Modal state
 const isModalOpen = ref(false);
@@ -92,48 +88,15 @@ const openModal = (videoKey) => {
   isModalOpen.value = true;
 };
 
-// Function to format the release date
-const formatDate = (dateString) => {
-  if (!dateString) return 'Unknown';
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+// Updated goToPage function to scroll to the top of the page
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Scrolls to the top smoothly
 };
 
-// Fetch the movies from the static file when the component is mounted
-onMounted(async () => {
-  try {
-    const response = await fetch('/data/movies.json'); // Load movies.json from the public/data directory
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    const data = await response.json();
-    movies.value = data;
-
-    totalPages.value = Math.ceil(movies.value.length / moviesPerPage);
-    paginateMovies();
-    loading.value = false;
-  } catch (err) {
-    error.value = err;
-    loading.value = false;
-  }
-});
-
-// Function to paginate the movies
-const paginateMovies = () => {
-  const start = (currentPage.value - 1) * moviesPerPage;
-  const end = start + moviesPerPage;
-  paginatedMovies.value = movies.value.slice(start, end);
-};
-
-// Function to change the page
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    paginateMovies();
-  }
+// Modify the goToPage function to scroll to top after page change
+const goToPageAndScroll = (pageNumber) => {
+  goToPage(pageNumber);  // Change the page
+  scrollToTop();         // Scroll to the top of the page
 };
 </script>
 
