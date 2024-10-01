@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
-  ssr: true,
+  ssr: false,
   devtools: { enabled: true },
   // Remove @nuxtjs/axios module
   modules: [],
