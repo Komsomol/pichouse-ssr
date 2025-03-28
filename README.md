@@ -1,75 +1,69 @@
-# Nuxt 3 Minimal Starter
+# PicHouse SSR - Picturehouse Cinema Schedule App
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This project creates a statically generated website showing movie showtimes for Picturehouse Cinemas. It fetches data from the Picturehouse website and generates a clean, user-friendly schedule.
 
-## Setup
+## Features
+
+-   Displays current movie listings from Picturehouse Cinemas
+-   Filters movies by cinema location
+-   Removes duplicate listings and cleans up movie titles
+-   Statically generated pages for fast loading and SEO benefits
+-   Automatic deployment to Surge hosting
+
+## Project Structure
+
+api - Server API utilities for fetching and processing movie data
+utils - Client-side utilities including data fetching helpers
+generateMoviesJson.js - Script to pre-fetch movie data for static generation
+
+# Setup
 
 Make sure to install the dependencies:
 
-```bash
-# npm
-npm install
+## Environment Configuration
 
-# pnpm
-pnpm install
+Create a .env file in the project root with the following variables:
 
-# yarn
-yarn install
+The cookie is required for API authentication with the Picturehouse website.
 
-# bun
-bun install
-```
+# Development Workflow
 
-## Development Server
+Generate Fresh Movie Data
+Before development, fetch the latest movie data:
 
-Start the development server on `http://localhost:3000`:
+## Start Development Server
 
-```bash
-# npm
-npm run dev
+Run the development server (default port 4000):
 
-# pnpm
-pnpm run dev
+`npm run dev`
 
-# yarn
-yarn dev
+Access the development site at http://localhost:4000
 
-# bun
-bun run dev
-```
+# Building for Production
 
-## Production
+## Generate Static Site
 
-Build the application for production:
+To build the static site with the latest movie data:
 
-```bash
-# npm
-npm run build
+This command:
+`npm run deploy`
 
-# pnpm
-pnpm run build
+1. Fetches the latest movie data
+2. Generates static HTML files
+3. Deploys to pichouse.surge.sh
 
-# yarn
-yarn build
+## Manual Deployment Steps
 
-# bun
-bun run build
-```
+If you want to build without deploying:
 
-Locally preview production build:
+### Fetch fresh movie data
 
-```bash
-# npm
-npm run preview
+`npm run fetch-movies`
 
-# pnpm
-pnpm run preview
+### Generate static site
 
-# yarn
-yarn preview
+`npm run generate`
 
-# bun
-bun run preview
-```
+### Preview locally
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+`npm run preview`
