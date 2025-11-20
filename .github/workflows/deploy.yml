@@ -37,7 +37,7 @@ jobs:
           echo "COOKIE=${{ secrets.PICTUREHOUSE_COOKIE }}" >> .env
 
       - name: Generate static files
-        run: npx nuxt generate
+        run: NODE_ENV=production npx nuxt generate
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
