@@ -21,7 +21,7 @@
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "normalize.css": "^8.0.1",
-    "nuxt": "^3.13.0",
+    "nuxt": "^3.20.1",
     "p-limit": "^7.2.0",
     "vue": "latest",
     "vue-router": "latest"
