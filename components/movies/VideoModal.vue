@@ -1,42 +1,60 @@
 <template>
-    <div v-if="show" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <button class="close-button" @click="closeModal">X</button>
-        <iframe
-          :src="videoUrl"
-          frameborder="0"
-          allow="autoplay; encrypted-media"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, watch } from 'vue';
-  
-  // Props for controlling the modal
-  const props = defineProps({
-    show: Boolean,
-    videoKey: String
-  });
-  
-  // Emit event to close the modal
-  const emit = defineEmits(['close']);
-  
-  // Construct the YouTube URL
-  const videoUrl = ref(`https://www.youtube.com/embed/${props.videoKey}?autoplay=1`);
-  
-  const closeModal = () => {
-    emit('close');
-  };
-  
-  // Watch for changes in videoKey and update the URL
-  watch(() => props.videoKey, (newKey) => {
-    videoUrl.value = `https://www.youtube.com/embed/${newKey}?autoplay=1`;
-  });
-  </script>
-  
+	<div
+		v-if="show"
+		class="modal-overlay"
+		@click="closeModal"
+	>
+		<div
+			class="modal-content"
+			@click.stop
+		>
+			<button
+				class="close-button"
+				@click="closeModal"
+			>
+				X
+			</button>
+			<iframe
+				:src="videoUrl"
+				frameborder="0"
+				allow="autoplay; encrypted-media"
+				allowfullscreen
+			/>
+		</div>
+	</div>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue';
+
+// Props for controlling the modal
+const props = defineProps({
+	show: {
+		type: Boolean,
+		default: false,
+	},
+	videoKey: {
+		type: String,
+		default: '',
+	},
+});
+
+// Emit event to close the modal
+const emit = defineEmits(['close']);
+
+// Construct the YouTube URL
+const videoUrl = ref(`https://www.youtube.com/embed/${props.videoKey}?autoplay=1`);
+
+const closeModal = () => {
+	emit('close');
+};
+
+// Watch for changes in videoKey and update the URL
+watch(() => props.videoKey, (newKey) => {
+	videoUrl.value = `https://www.youtube.com/embed/${newKey}?autoplay=1`;
+});
+</script>
+
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -85,6 +103,4 @@ iframe {
 .close-button:hover {
   background: #ff0000; /* Darker red on hover */
 }
-
 </style>
-  

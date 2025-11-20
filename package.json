@@ -3,23 +3,36 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "build": "npm run validate:env && npm run lint && npm run test && nuxt build",
+    "dev": "npm run validate:env && npm run lint && nuxt dev",
+    "generate": "npm run validate:env && npm run lint && npm run test && nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "validate:env": "node scripts/validate-env.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "fetch-movies": "node ./test/generateMoviesJson.js",
     "deploy": "npm run fetch-movies && nuxt generate && surge dist/ pichouse.surge.sh"
   },
   "dependencies": {
-    "axios": "^1.7.7",
-    "dotenv": "^16.4.5",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
     "normalize.css": "^8.0.1",
     "nuxt": "^3.13.0",
+    "p-limit": "^7.2.0",
     "vue": "latest",
     "vue-router": "latest"
   },
   "devDependencies": {
-    "surge": "^0.24.6"
+    "@nuxt/eslint-config": "^1.10.0",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vue": "^10.5.1",
+    "happy-dom": "^20.0.10",
+    "surge": "^0.24.6",
+    "vitest": "^4.0.10"
   }
 }

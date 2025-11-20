@@ -1,9 +1,13 @@
 export default defineNuxtConfig({
-	compatibilityDate: '2024-04-03',
-	ssr: false,
-	devtools: { enabled: true },
 	// Remove @nuxtjs/axios module
 	modules: [],
+	ssr: false,
+	devtools: { enabled: true },
+	css: [
+		'normalize.css', // If using normalize.css from npm
+		// '@/assets/css/custom-reset.css' // Uncomment this if using your own reset file
+	],
+	compatibilityDate: '2024-04-03',
 	server: {
 		// Set the host and port manually
 		host: '0.0.0.0', // default: localhost
@@ -14,8 +18,4 @@ export default defineNuxtConfig({
 			total: true,
 		},
 	},
-	css: [
-		'normalize.css', // If using normalize.css from npm
-		// '@/assets/css/custom-reset.css' // Uncomment this if using your own reset file
-	],
 });

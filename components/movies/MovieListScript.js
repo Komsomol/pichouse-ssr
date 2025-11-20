@@ -1,64 +1,101 @@
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useFetch } from '#app'; // Nuxt 3 native fetch utility
 
 export default function useMovieList() {
-  // Fetch movie data from the API
-  const { data: movies, pending, error } = useFetch('/api/movies');
+	// Fetch movie data from the API
+	const { data: movies, pending, error } = useFetch('/api/movies');
 
-  // Pagination state
-  const currentPage = ref(1);
-  const moviesPerPage = 10;
+	// Loading progress messages
+	const loadingMessage = ref('');
+	const loadingMessages = [
+		'🎬 Finding the best seats in Screen 1...',
+		'🍿 Popping fresh popcorn...',
+		'🎞️ Rewinding the film reels...',
+		'🎭 Checking what\'s showing tonight...',
+		'🎪 Setting up the projector...',
+		'🎨 Adjusting the picture quality...',
+		'🎵 Testing the surround sound...',
+		'🌟 Gathering tonight\'s features...',
+		'🎯 Filtering showtimes after 6 PM...',
+		'🎫 Printing your tickets...',
+		'🍫 Restocking the snack bar...',
+		'🎬 Dimming the lights...',
+	];
 
-  // Computed property to paginate movies
-  const paginatedMovies = computed(() => {
-    if (!movies.value) return [];
-    const start = (currentPage.value - 1) * moviesPerPage;
-    const end = start + moviesPerPage;
-    return movies.value.slice(start, end);
-  });
+	// Pagination state
+	const currentPage = ref(1);
+	const moviesPerPage = 10;
 
-  // Total pages
-  const totalPages = computed(() => {
-    if (!movies.value) return 1;
-    return Math.ceil(movies.value.length / moviesPerPage);
-  });
+	// Rotate loading messages
+	let messageInterval;
+	onMounted(() => {
+		if (pending.value) {
+			let messageIndex = 0;
+			loadingMessage.value = loadingMessages[messageIndex];
+			messageInterval = setInterval(() => {
+				messageIndex = (messageIndex + 1) % loadingMessages.length;
+				loadingMessage.value = loadingMessages[messageIndex];
+			}, 2000); // Change message every 2 seconds
+		}
 
-  // Navigate to a specific page
-  const goToPage = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages.value) {
-      currentPage.value = pageNumber;
-    }
-  };
+		// Clear interval when loading is done
+		const stopMessages = () => {
+			if (messageInterval) {
+				clearInterval(messageInterval);
+			}
+		};
 
-  // Function to generate video URL
-  const getVideoUrl = (video) => {
-    if (video.site === 'YouTube') {
-      return `https://www.youtube.com/watch?v=${video.key}`;
-    }
-    return '#'; // Fallback if not YouTube
-  };
+		// Watch for pending to become false
+		const watchEffect = () => {
+			if (!pending.value) {
+				stopMessages();
+			}
+		};
+		watchEffect();
+	});
 
-  // Function to format the release date into a more readable format
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Unknown';
+	// Computed property to paginate movies
+	const paginatedMovies = computed(() => {
+		if (!movies.value) return [];
+		const start = (currentPage.value - 1) * moviesPerPage;
+		const end = start + moviesPerPage;
+		return movies.value.slice(start, end);
+	});
 
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-  };
+	// Total pages
+	const totalPages = computed(() => {
+		if (!movies.value) return 0;
+		return Math.ceil(movies.value.length / moviesPerPage);
+	});
 
-  return {
-    movies,
-    paginatedMovies,
-    pending,
-    error,
-    getVideoUrl,
-    formatDate,
-    currentPage,
-    totalPages,
-    goToPage,
-  };
+	// Navigate to a specific page
+	const goToPage = (pageNumber) => {
+		if (pageNumber > 0 && pageNumber <= totalPages.value) {
+			currentPage.value = pageNumber;
+		}
+	};
+
+	// Function to format the release date into a more readable format
+	const formatDate = (dateString) => {
+		if (!dateString) return 'Unknown';
+
+		const date = new Date(dateString);
+		return new Intl.DateTimeFormat('en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		}).format(date);
+	};
+
+	return {
+		movies,
+		paginatedMovies,
+		pending,
+		error,
+		formatDate,
+		currentPage,
+		totalPages,
+		goToPage,
+		loadingMessage,
+	};
 }
