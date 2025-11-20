@@ -3,6 +3,9 @@ export default defineNuxtConfig({
 	modules: [],
 	ssr: false,
 	devtools: { enabled: true },
+	app: {
+		baseURL: process.env.NODE_ENV === 'production' ? '/pichouse-ssr/' : '/',
+	},
 	css: [
 		'normalize.css', // If using normalize.css from npm
 		// '@/assets/css/custom-reset.css' // Uncomment this if using your own reset file
