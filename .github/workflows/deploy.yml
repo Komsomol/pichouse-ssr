@@ -36,8 +36,8 @@ jobs:
           echo "TMDB_TOKEN=${{ secrets.TMDB_TOKEN }}" >> .env
           echo "COOKIE=${{ secrets.PICTUREHOUSE_COOKIE }}" >> .env
 
-      - name: Build
-        run: npm run build
+      - name: Generate static files
+        run: npx nuxt generate
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
