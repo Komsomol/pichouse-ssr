@@ -17,6 +17,28 @@
   --shadow-accent: rgba(249, 35, 0, 0.15);
   --disabled-bg: #e0e0e0;
   --disabled-text: #999;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Font sizes - fluid typography */
+  --font-xs: clamp(0.75rem, 2vw, 0.85rem);
+  --font-sm: clamp(0.85rem, 2.5vw, 0.95rem);
+  --font-base: clamp(0.95rem, 3vw, 1rem);
+  --font-md: clamp(1rem, 3vw, 1.1rem);
+  --font-lg: clamp(1.1rem, 3.5vw, 1.25rem);
+  --font-xl: clamp(1.25rem, 4vw, 1.5rem);
+  --font-2xl: clamp(1.5rem, 5vw, 2rem);
+  --font-3xl: clamp(1.75rem, 6vw, 2.5rem);
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -39,8 +61,15 @@
 }
 
 /* Global Styles */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -50,79 +79,76 @@ html, body {
   padding: 0;
 }
 
-/* Styling for the main container */
+/* === MOBILE FIRST (Base styles for smallest screens) === */
+
 .container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.78rem;
+  padding: var(--space-md);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Merriweather', Georgia, serif;
-  font-size: 112.5%; /* 18px */
-  line-height: 1.78;
+  font-size: var(--font-base);
+  line-height: 1.6;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
 }
 
-/* Styling for the h1 heading */
+/* Page Title */
 h1 {
   font-family: 'Open Sans', sans-serif;
-  font-size: 2.5rem;
+  font-size: var(--font-2xl);
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
-  margin-bottom: 1.78rem;
-  padding-bottom: 1.78rem;
+  margin: 0 0 var(--space-lg);
+  padding-bottom: var(--space-md);
   border-bottom: 2px solid var(--accent);
   letter-spacing: -0.025em;
 }
 
-/* Styling for the main movie container */
+/* Movie Card - Mobile stacked layout */
 .movie-block {
   display: flex;
-  gap: 1.78rem;
-  margin-bottom: 1.78rem;
-  padding: 1.78rem;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
   background: var(--bg-card);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px var(--shadow-light);
-  transition: all 0.2s ease;
 }
 
-.movie-block:hover {
-  box-shadow: 0 4px 16px var(--shadow-accent);
-  border-color: var(--accent);
-}
-
-/* Movie Poster Styling */
+/* Movie Poster */
 .movie-poster {
-  flex-shrink: 0;
-  width: 200px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  aspect-ratio: 2/3;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .movie-poster img {
   width: 100%;
-  height: auto;
-  border-radius: 4px;
+  height: 100%;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
 }
 
-/* Movie Info Container */
+/* Movie Info */
 .movie-info {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-sm);
   flex: 1;
   color: var(--text-primary);
 }
 
-/* Movie Title */
 .movie-title {
   font-family: 'Open Sans', sans-serif;
-  font-size: 1.75rem;
+  font-size: var(--font-xl);
   font-weight: 700;
   margin: 0;
   color: var(--text-primary);
@@ -133,119 +159,120 @@ h1 {
 .movie-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-xs);
 }
 
 .movie-details p {
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.78;
+  font-size: var(--font-sm);
+  line-height: 1.6;
   color: var(--text-secondary);
 }
 
 .movie-details strong {
   color: var(--accent);
   font-weight: 700;
-  margin-right: 0.5rem;
+  margin-right: var(--space-xs);
 }
 
-/* Movie Showtimes */
+/* Showtimes Section */
 .movie-showtimes {
-  margin-top: 1rem;
-  padding: 1.78rem;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
   background: var(--bg-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent);
 }
 
 .movie-showtimes h4 {
   font-family: 'Open Sans', sans-serif;
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--space-md) 0;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: var(--font-md);
   font-weight: 700;
 }
 
+/* Showtimes Grid - Single column on mobile */
 .showtimes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
 }
 
+/* Showtime Card */
 .showtime-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.showtime-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 8px var(--shadow-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: var(--space-xs) var(--space-md);
+  align-items: center;
 }
 
 .showtime-cinema {
+  grid-column: 1 / -1;
   font-family: 'Open Sans', sans-serif;
-  font-size: 0.85rem;
+  font-size: var(--font-xs);
   color: var(--accent);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding-bottom: 0.5rem;
+  padding-bottom: var(--space-xs);
   border-bottom: 1px solid var(--border-color);
 }
 
 .showtime-date {
-  font-size: 0.9rem;
+  font-size: var(--font-sm);
   color: var(--text-muted);
   font-weight: 400;
 }
 
 .showtime-time {
   font-family: 'Open Sans', sans-serif;
-  font-size: 1.2rem;
+  font-size: var(--font-lg);
   color: var(--text-primary);
   font-weight: 700;
 }
 
+/* Book Button */
 .book-button {
-  display: block;
-  text-align: center;
-  padding: 0.75rem 1rem;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
   background: var(--accent);
   color: white;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-family: 'Open Sans', sans-serif;
   font-weight: 700;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px var(--shadow-accent);
+  font-size: var(--font-sm);
+  min-height: 44px; /* Touch target size */
+  -webkit-touch-callout: none;
 }
 
-.book-button:hover {
+.book-button:active {
   background: var(--accent-hover);
-  box-shadow: 0 4px 8px var(--shadow-accent);
 }
 
-/* Movie Videos */
+/* Videos Section */
 .movie-videos {
-  margin-top: 1rem;
-  padding: 1.78rem;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
   background-color: var(--bg-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border-left: 3px solid var(--border-color);
 }
 
 .movie-videos h4 {
   font-family: 'Open Sans', sans-serif;
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--space-sm) 0;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: var(--font-md);
   font-weight: 700;
 }
 
@@ -255,24 +282,23 @@ h1 {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-xs);
 }
 
 .movie-videos ul li a {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  min-height: 44px; /* Touch target */
   text-decoration: none;
   color: var(--accent);
   font-weight: 700;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
   background-color: var(--shadow-accent);
-  transition: all 0.2s ease;
 }
 
-.movie-videos ul li a:hover {
-  background-color: var(--shadow-accent);
-  filter: brightness(1.1);
-  transform: translateX(4px);
+.movie-videos ul li a:active {
+  filter: brightness(0.9);
 }
 
 /* Loading State */
@@ -281,19 +307,20 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  padding: 2rem;
+  min-height: 60vh;
+  min-height: 60dvh;
+  padding: var(--space-lg);
   text-align: center;
 }
 
 .loading-spinner {
-  width: 60px;
-  height: 60px;
-  border: 4px solid var(--border-color);
-  border-top: 4px solid var(--accent);
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1.78rem;
+  margin-bottom: var(--space-lg);
 }
 
 @keyframes spin {
@@ -303,10 +330,10 @@ h1 {
 
 .loading-message {
   font-family: 'Open Sans', sans-serif;
-  font-size: 1.3rem;
+  font-size: var(--font-lg);
   font-weight: 700;
   color: var(--accent);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-xs) 0;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -316,28 +343,29 @@ h1 {
 }
 
 .loading-subtitle {
-  font-size: 1rem;
+  font-size: var(--font-sm);
   color: var(--text-subtle);
   margin: 0;
 }
 
 .error-container {
-  padding: 2rem;
+  padding: var(--space-lg);
   text-align: center;
   color: var(--accent);
-  font-size: 1.1rem;
+  font-size: var(--font-md);
 }
 
-/* Pagination Styling */
+/* Pagination */
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin: 1.78rem 0;
-  padding: 1.78rem;
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+  padding: var(--space-md);
   background: var(--bg-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
 }
 
@@ -345,18 +373,19 @@ h1 {
   background: var(--accent);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: var(--space-sm) var(--space-md);
   cursor: pointer;
   font-family: 'Open Sans', sans-serif;
-  font-size: 1rem;
+  font-size: var(--font-sm);
   font-weight: 700;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-touch-callout: none;
 }
 
-.pagination button:hover:not(:disabled) {
+.pagination button:active:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: 0 2px 8px var(--shadow-accent);
 }
 
 .pagination button:disabled {
@@ -367,109 +396,191 @@ h1 {
 
 .pagination span {
   font-family: 'Open Sans', sans-serif;
-  font-size: 1rem;
+  font-size: var(--font-sm);
   font-weight: 600;
   color: var(--text-primary);
-  min-width: 140px;
   text-align: center;
+  order: -1;
+  width: 100%;
+  padding-bottom: var(--space-xs);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+
+/* === TABLET (600px+) === */
+@media (min-width: 600px) {
   .container {
-    padding: 1.78rem 1rem;
+    padding: var(--space-lg);
   }
 
   h1 {
-    font-size: 2rem;
-    margin-bottom: 1.78rem;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
   }
 
+  /* Side-by-side layout for movie cards */
   .movie-block {
-    gap: 1rem;
-    padding: 1rem;
+    flex-direction: row;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
   }
 
   .movie-poster {
-    width: 140px;
+    width: 160px;
+    max-width: 160px;
+    flex-shrink: 0;
+    margin: 0;
   }
 
-  .movie-title {
-    font-size: 1.5rem;
+  .movie-info {
+    gap: var(--space-md);
   }
 
-  .movie-details p {
-    font-size: 0.95rem;
-  }
-
+  /* Two column grid for showtimes */
   .showtimes-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
   }
 
-  .pagination {
-    padding: 1rem;
-    gap: 0.75rem;
+  .showtime-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: var(--space-xs);
+    padding: var(--space-md);
   }
 
-  .pagination button {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
+  .showtime-time {
+    order: 1;
+  }
+
+  .showtime-date {
+    order: 2;
+  }
+
+  .book-button {
+    order: 3;
+    margin-top: var(--space-xs);
   }
 
   .pagination span {
-    font-size: 0.95rem;
+    order: 0;
+    width: auto;
+    padding-bottom: 0;
     min-width: 120px;
   }
 }
 
-@media (max-width: 480px) {
+
+/* === LAPTOP (900px+) === */
+@media (min-width: 900px) {
   .container {
-    padding: 1rem;
-  }
-
-  h1 {
-    font-size: 1.75rem;
-  }
-
-  .movie-block {
-    flex-direction: column;
-    gap: 1rem;
+    padding: var(--space-xl);
   }
 
   .movie-poster {
-    width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
+    width: 180px;
+    max-width: 180px;
   }
 
-  .movie-title {
-    font-size: 1.35rem;
-  }
-
-  .movie-details p {
-    font-size: 0.9rem;
-  }
-
+  /* Three column grid for showtimes */
   .showtimes-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .showtime-card {
-    padding: 0.75rem;
+  .movie-showtimes,
+  .movie-videos {
+    padding: var(--space-lg);
   }
 
   .pagination {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-md);
+    padding: var(--space-lg);
   }
 
   .pagination button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: var(--space-sm) var(--space-lg);
+  }
+}
+
+
+/* === DESKTOP (1200px+) === */
+@media (min-width: 1200px) {
+  .movie-poster {
+    width: 200px;
+    max-width: 200px;
   }
 
-  .pagination span {
-    font-size: 0.9rem;
-    width: 100%;
+  /* Four column grid for showtimes */
+  .showtimes-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
+/* === HOVER STATES (Only for devices that support hover) === */
+@media (hover: hover) and (pointer: fine) {
+  .movie-block {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .movie-block:hover {
+    box-shadow: 0 4px 16px var(--shadow-accent);
+    border-color: var(--accent);
+  }
+
+  .showtime-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .showtime-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px var(--shadow-accent);
+  }
+
+  .book-button {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .book-button:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 8px var(--shadow-accent);
+  }
+
+  .movie-videos ul li a {
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+
+  .movie-videos ul li a:hover {
+    filter: brightness(1.1);
+    transform: translateX(4px);
+  }
+
+  .pagination button {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pagination button:hover:not(:disabled) {
+    background: var(--accent-hover);
+    box-shadow: 0 2px 8px var(--shadow-accent);
+  }
+}
+
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .loading-spinner {
+    animation: none;
+    border-top-color: var(--accent);
+  }
+
+  .loading-message {
+    animation: none;
   }
 }

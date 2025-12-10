@@ -13,7 +13,7 @@ import {
 } from '../utils/constants';
 import {
 	createFallbackVideos,
-	isAfterMinHour,
+	meetsTimeRequirement,
 	generateBookingUrl,
 } from '../utils/helpers';
 
@@ -121,13 +121,14 @@ export default defineEventHandler(async (_event) => {
 
 		const moviesWithScreen1Showtimes = Array.from(uniqueMovies.values())
 			.map((movie) => {
-				// Filter showtimes for Screen 1, after min hour, at target cinemas
+				// Filter showtimes for Screen 1, at target cinemas
+			// Time filter: weekdays after 6PM, weekends all times
 				const screen1Showtimes = (movie.show_times || []).filter((showtime) => {
 					const isScreen1 = showtime.ScreenName === SCREENING_CONFIG.SCREEN_NAME;
 					const isTargetCinema = TARGET_CINEMA_IDS.includes(showtime.CinemaId);
-					const meetsTimeRequirement = isAfterMinHour(showtime.Showtime, SCREENING_CONFIG.MIN_HOUR);
+					const validTime = meetsTimeRequirement(showtime.Showtime, SCREENING_CONFIG.MIN_HOUR);
 
-					return isScreen1 && isTargetCinema && meetsTimeRequirement;
+					return isScreen1 && isTargetCinema && validTime;
 				});
 
 				// Generate booking URLs and add cinema names for each showtime

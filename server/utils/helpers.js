@@ -23,10 +23,27 @@ export const createFallbackVideos = (trailerUrl) => {
 };
 
 /**
- * Checks if a showtime is after the minimum hour
+ * Checks if a showtime meets time requirements
+ * - Weekends (Sat/Sun): All times allowed
+ * - Weekdays (Mon-Fri): Must be after minimum hour
  * @param {string} showtimeString - ISO datetime string
- * @param {number} minHour - Minimum hour (24-hour format)
- * @returns {boolean} True if showtime is after or equal to the minimum hour
+ * @param {number} minHour - Minimum hour for weekdays (24-hour format)
+ * @returns {boolean} True if showtime meets requirements
+ */
+export const meetsTimeRequirement = (showtimeString, minHour) => {
+	const showtimeDate = new Date(showtimeString);
+	const dayOfWeek = showtimeDate.getDay();
+	const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+
+	// Weekends: all times allowed
+	if (isWeekend) return true;
+
+	// Weekdays: must be after minimum hour
+	return showtimeDate.getHours() >= minHour;
+};
+
+/**
+ * @deprecated Use meetsTimeRequirement instead
  */
 export const isAfterMinHour = (showtimeString, minHour) => {
 	const showtimeDate = new Date(showtimeString);
