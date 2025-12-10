@@ -53,8 +53,8 @@ Return JSON to client
 Located in `/server/utils/constants.js`:
 
 ```javascript
-CINEMA_IDS: { FINSBURY_PARK: '001', PICTUREHOUSE_CENTRAL: '021' }
-TARGET_CINEMA_IDS: ['001', '021']
+CINEMA_IDS: { FINSBURY_PARK: '029', PICTUREHOUSE_CENTRAL: '022' }
+TARGET_CINEMA_IDS: ['029', '022']
 SCREENING_CONFIG: {
   SCREEN_NAME: 'Screen 1',
   MIN_HOUR: 18,
@@ -68,6 +68,7 @@ MAX_CONCURRENT_TMDB_REQUESTS: 5
 Required in `.env`:
 ```
 TMDB_API_KEY=your_tmdb_api_key
+OMDB_API_KEY=your_omdb_api_key  # Fallback for trailers when TMDb has none
 ```
 
 Validated at startup by `scripts/validate-env.js`.

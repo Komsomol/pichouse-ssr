@@ -69,8 +69,8 @@ describe('Environment Variable Validation', () => {
 	describe('CINEMA_ID (optional)', () => {
 		it('should work without CINEMA_ID (should use default)', () => {
 			delete process.env.CINEMA_ID;
-			const defaultCinemaId = process.env.CINEMA_ID || '031';
-			expect(defaultCinemaId).toBe('031');
+			const defaultCinemaId = process.env.CINEMA_ID || '029';
+			expect(defaultCinemaId).toBe('029');
 		});
 
 		it('should accept custom CINEMA_ID', () => {

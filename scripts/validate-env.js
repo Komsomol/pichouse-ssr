@@ -94,7 +94,7 @@ function validateEnvironment() {
 
 	// Check optional variables
 	if (!process.env.CINEMA_ID) {
-		warnings.push('CINEMA_ID not set, will use default: 031 (Finsbury Park)');
+		warnings.push('CINEMA_ID not set, will use default: 029 (Finsbury Park)');
 	}
 
 	// Display warnings

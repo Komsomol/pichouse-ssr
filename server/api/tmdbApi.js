@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { tmdbCache } from '../utils/cache.js';
+import { cleanTitleForSearch } from './filterMovies.js';
 
 dotenv.config(); // Load environment variables
 
@@ -51,14 +52,17 @@ const createPosterUrl = posterPath =>
 
 // Fetch movie from TMDb by title, with an option to specify if we are looking for the latest released movie
 export const fetchMovieFromTMDb = async (title, findLatest = false) => {
-	// Check cache first
+	// Clean the title for better search results (removes 35mm, Anniversary, etc.)
+	const cleanedTitle = cleanTitleForSearch(title);
+
+	// Check cache first (use original title for cache key consistency)
 	const cacheKey = `movie:${title}:${findLatest}`;
 	const cachedMovie = tmdbCache.get(cacheKey);
 	if (cachedMovie) {
 		return cachedMovie;
 	}
 
-	const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}`;
+	const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(cleanedTitle)}`;
 	const headers = {
 		Authorization: `Bearer ${TMDB_TOKEN}`, // Use Bearer token for authorization
 	};

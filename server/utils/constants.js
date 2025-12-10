@@ -3,9 +3,10 @@
  */
 
 // Cinema configuration
-// Cinema IDs verified from picturehouses.com website JavaScript
+// Cinema IDs verified from picturehouses.com booking URLs
+// Format: https://web.picturehouses.com/order/showtimes/{cinemaId}-{sessionId}/seats
 export const CINEMA_IDS = {
-	FINSBURY_PARK: '031',
+	FINSBURY_PARK: '029',
 	PICTUREHOUSE_CENTRAL: '022',
 };
 

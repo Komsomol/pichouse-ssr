@@ -3,6 +3,80 @@
  */
 
 /**
+ * Cleans movie title for API searches (TMDb, OMDB)
+ * Removes Picturehouse-specific screening indicators that won't match in movie databases
+ * @param {string} title - The original movie title
+ * @returns {string} Cleaned title for API search
+ */
+export const cleanTitleForSearch = (title) => {
+	if (!title) return '';
+
+	let cleaned = title;
+
+	// Remove format/screening indicators (order matters - specific patterns first)
+	const patternsToRemove = [
+		// Format indicators
+		/\s*-\s*35\s*mm$/i,
+		/\s*-\s*70\s*mm$/i,
+		/\s*\(35\s*mm\)$/i,
+		/\s*\(70\s*mm\)$/i,
+		/\s*-\s*IMAX$/i,
+		/\s*\(IMAX\)$/i,
+		/\s*-\s*4K$/i,
+		/\s*\(4K\)$/i,
+		/\s*\(4K Restoration\)$/i,
+		/\s*-\s*Digital$/i,
+
+		// Anniversary/special editions
+		/\s*\(\d+th Anniversary\)/i,
+		/\s*\(\d+st Anniversary\)/i,
+		/\s*\(\d+nd Anniversary\)/i,
+		/\s*\(\d+rd Anniversary\)/i,
+		/\s*\(Anniversary\)/i,
+		/\s*\(Rerelease\)/i,
+		/\s*\(Re-release\)/i,
+		/\s*\(Restored\)/i,
+		/\s*\(Director's Cut\)/i,
+		/\s*-\s*Director's Cut$/i,
+		/\s*\(Extended Edition\)/i,
+		/\s*\(Special Edition\)/i,
+		/\s*\(Original Cut\)/i,
+		/\s*-\s*Original Cut$/i,
+
+		// Screening types
+		/\s*-\s*Preview$/i,
+		/\s*\(Preview\)$/i,
+		/^Preview Screening:\s*/i,
+		/^Relaxed Screening:\s*/i,
+		/^FILM CLUB:\s*/i,
+		/^NT Live:\s*/i,
+		/^EXHIBITION ON SCREEN:\s*/i,
+
+		// Event add-ons
+		/\s*\+\s*Q&A$/i,
+		/\s*\+\s*Live Intro.*$/i,
+		/\s*\+\s*Mulled Wine.*$/i,
+		/\s*\+\s*Prosecco.*$/i,
+		/\s*\+\s*PJ Party$/i,
+
+		// Year in parentheses (keep for context but try without if no match)
+		// /\s*\(\d{4}\)$/,
+	];
+
+	patternsToRemove.forEach((pattern) => {
+		cleaned = cleaned.replace(pattern, '').trim();
+	});
+
+	// Remove any remaining content in parentheses at the end (ratings, etc.)
+	cleaned = cleaned.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
+	// Remove trailing hyphens or colons left over
+	cleaned = cleaned.replace(/\s*[-:]\s*$/, '').trim();
+
+	return cleaned || title; // Fall back to original if cleaning empties it
+};
+
+/**
  * Removes unwanted strings and patterns from movie titles
  * @param {string} title - The original movie title
  * @returns {string|null} Sanitized title or null if invalid
@@ -66,25 +140,28 @@ export const sanitizeMovieTitle = (title) => {
 };
 
 /**
- * Filters movies by cinema, removes duplicates, and skips excluded titles
+ * Filters movies by cinema(s), removes duplicates, and skips excluded titles
  * PURE FUNCTION: No side effects, returns new objects instead of mutating
  * @param {Array} movies - Array of movie objects
- * @param {string} cinemaId - Cinema identifier to filter by
+ * @param {string|string[]} cinemaIds - Cinema identifier(s) to filter by (single ID or array)
  * @returns {Array} Filtered and deduplicated movie array
  */
-export const filterMoviesByCinemaAndRemoveDuplicates = (movies, cinemaId) => {
+export const filterMoviesByCinemaAndRemoveDuplicates = (movies, cinemaIds) => {
 	const uniqueTitles = new Set();
 	const titleExclusionList = ['Dawn of Impressionism - Paris 1874'];
 
+	// Normalize to array for consistent handling
+	const targetCinemas = Array.isArray(cinemaIds) ? cinemaIds : [cinemaIds];
+
 	return movies
-		// Step 1: Filter by cinema and excluded titles
+		// Step 1: Filter by cinema(s) and excluded titles
 		.filter((movie) => {
 			// Skip excluded movies
 			if (titleExclusionList.some(excluded => movie.Title.includes(excluded))) {
 				return false;
 			}
-			// Filter by cinema
-			return movie.available_cinemas.includes(cinemaId);
+			// Filter by cinema - include if available at ANY target cinema
+			return movie.available_cinemas.some(cinema => targetCinemas.includes(cinema));
 		})
 		// Step 2: Sanitize titles and create new objects (immutable transformation)
 		.map((movie) => {
@@ -96,12 +173,14 @@ export const filterMoviesByCinemaAndRemoveDuplicates = (movies, cinemaId) => {
 			};
 		})
 		// Step 3: Filter out invalid titles and duplicates
+		// Use ORIGINAL title for deduplication to keep different screenings
+		// (e.g., "The Shining - Original Cut" vs "The Shining (45th Anniversary)")
 		.filter((movie) => {
 			// Filter out if the sanitized title is null or already processed
-			if (!movie.Title || uniqueTitles.has(movie.Title)) {
+			if (!movie.Title || uniqueTitles.has(movie._originalTitle)) {
 				return false;
 			}
-			uniqueTitles.add(movie.Title);
+			uniqueTitles.add(movie._originalTitle);
 			return true;
 		});
 };

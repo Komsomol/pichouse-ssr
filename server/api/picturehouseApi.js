@@ -7,7 +7,7 @@ dotenv.config(); // Load environment variables
 
 // Configuration constants (pure data)
 const COOKIE = process.env.COOKIE;
-const CINEMA_ID = '031'; // Finsbury Park
+const CINEMA_ID = '029'; // Finsbury Park
 const API_BASE_URL = 'https://www.picturehouses.com';
 
 // Pure function: Create API headers

@@ -68,12 +68,21 @@
 						<ul>
 							<li
 								v-for="video in movie.videos"
-								:key="video.key"
+								:key="video.key || video.searchUrl"
 							>
+								<!-- Direct YouTube video - opens in modal -->
 								<a
+									v-if="video.key && !video.isSearch"
 									href="javascript:void(0)"
 									@click="openModal(video.key)"
 								>{{ video.name }}</a>
+								<!-- YouTube search link - opens in new tab -->
+								<a
+									v-else-if="video.searchUrl"
+									:href="video.searchUrl"
+									target="_blank"
+									rel="noopener noreferrer"
+								>🔍 {{ video.name }}</a>
 							</li>
 						</ul>
 					</div>
@@ -82,7 +91,7 @@
 				<!-- Right column: Info + Showtimes -->
 				<div class="movie-info">
 					<h3 class="movie-title">
-						{{ movie.original_title }}
+						{{ movie._originalTitle || movie.Title }}
 					</h3>
 
 					<div class="movie-details">
@@ -97,7 +106,7 @@
 						v-if="movie.screen1Showtimes && movie.screen1Showtimes.length"
 						class="movie-showtimes"
 					>
-						<h4>🎬 Screen 1 Showtimes (After 6 PM):</h4>
+						<h4>🎬 Screen 1 Showtimes:</h4>
 						<div class="showtimes-grid">
 							<div
 								v-for="showtime in movie.screen1Showtimes"
