@@ -23,8 +23,7 @@
     "normalize.css": "^8.0.1",
     "nuxt": "^3.13.0",
     "p-limit": "^7.2.0",
-    "vue": "latest",
-    "vue-router": "latest"
+    "vue": "latest"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.10.0",
