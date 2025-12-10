@@ -49,14 +49,37 @@
 				:key="movie.ID"
 				class="movie-block"
 			>
-				<div class="movie-poster">
-					<img
-						v-if="movie.poster"
-						:src="movie.poster"
-						alt="Movie poster"
+				<!-- Left column: Poster + Trailers -->
+				<div class="movie-left">
+					<div class="movie-poster">
+						<img
+							v-if="movie.poster"
+							:src="movie.poster"
+							alt="Movie poster"
+						>
+					</div>
+
+					<!-- Video Links (under poster on tablet+) -->
+					<div
+						v-if="movie.videos.length"
+						class="movie-videos"
 					>
+						<h4>Trailers:</h4>
+						<ul>
+							<li
+								v-for="video in movie.videos"
+								:key="video.key"
+							>
+								<a
+									href="javascript:void(0)"
+									@click="openModal(video.key)"
+								>{{ video.name }}</a>
+							</li>
+						</ul>
+					</div>
 				</div>
 
+				<!-- Right column: Info + Showtimes -->
 				<div class="movie-info">
 					<h3 class="movie-title">
 						{{ movie.original_title }}
@@ -100,25 +123,6 @@
 								</a>
 							</div>
 						</div>
-					</div>
-
-					<!-- Video Links -->
-					<div
-						v-if="movie.videos.length"
-						class="movie-videos"
-					>
-						<h4>Trailers:</h4>
-						<ul>
-							<li
-								v-for="video in movie.videos"
-								:key="video.key"
-							>
-								<a
-									href="javascript:void(0)"
-									@click="openModal(video.key)"
-								>{{ video.name }}</a>
-							</li>
-						</ul>
 					</div>
 				</div>
 			</div>

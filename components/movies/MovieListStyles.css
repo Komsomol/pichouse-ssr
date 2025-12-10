@@ -1,28 +1,30 @@
-/* Importing voidkat.com fonts */
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap');
+/* =============================================================================
+   BOUTIQUE CINEMA DESIGN SYSTEM
+   Warm, premium, welcoming — like a boutique cinema experience
+   ============================================================================= */
 
-/* CSS Custom Properties for theming */
+/* [1] FONT IMPORT - DM Sans + DM Serif Display for premium feel */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap');
+
+/* =============================================================================
+   [2] CSS CUSTOM PROPERTIES - Light Theme (Warm cream palette)
+   ============================================================================= */
 :root {
-  /* Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #fafafa;
+  /* Colors - warm cream background with navy text */
+  --bg-primary: #f8f6f3;
+  --bg-secondary: #efecea;
   --bg-card: #ffffff;
-  --text-primary: hsla(0, 0%, 0%, 0.9);
-  --text-secondary: hsla(0, 0%, 0%, 0.75);
-  --text-muted: hsla(0, 0%, 0%, 0.65);
-  --text-subtle: hsla(0, 0%, 0%, 0.5);
-  --label-color: hsla(0, 0%, 0%, 0.8); /* For form labels and metadata labels */
-  --accent: #f92300;
-  --accent-hover: #d91f00;
-  --border-color: #e0e0e0;
-  --shadow-light: rgba(0, 0, 0, 0.08);
-  --shadow-accent: rgba(249, 35, 0, 0.15);
-  --disabled-bg: #e0e0e0;
-  --disabled-text: #999;
-
-  /* Venue colors (optional differentiation) */
-  --venue-finsbury: #2d5016;
-  --venue-central: #1a5490;
+  --text-primary: #1c2230;
+  --text-secondary: #3d4555;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --accent: #d4885a;
+  --accent-hover: #c47a4e;
+  --border-color: #e5e2dd;
+  --shadow-light: rgba(28, 34, 48, 0.06);
+  --shadow-accent: rgba(212, 136, 90, 0.15);
+  --disabled-bg: #e5e2dd;
+  --disabled-text: #9ca3af;
 
   /* Spacing scale (4px base) */
   --space-xs: 0.25rem;  /* 4px */
@@ -46,36 +48,36 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
-  /* Transitions */
+  /* [7] Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
 }
 
+/* =============================================================================
+   [3] DARK THEME - Deep navy with warm terracotta accent
+   ============================================================================= */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #242424;
-    --bg-card: #2a2a2a;
-    --text-primary: hsla(0, 0%, 100%, 0.9);
-    --text-secondary: hsla(0, 0%, 100%, 0.75);
-    --text-muted: hsla(0, 0%, 100%, 0.7); /* Increased from 0.65 for WCAG AA contrast */
-    --text-subtle: hsla(0, 0%, 100%, 0.6); /* Increased from 0.5 for better readability */
-    --label-color: hsla(0, 0%, 100%, 0.85);
-    --accent: #ff4d2a;
-    --accent-hover: #ff6347;
-    --border-color: #3a3a3a;
-    --shadow-light: rgba(0, 0, 0, 0.3);
-    --shadow-accent: rgba(255, 77, 42, 0.2);
-    --disabled-bg: #3a3a3a;
-    --disabled-text: #777; /* Increased from #666 for better contrast */
-
-    /* Venue colors - lighter for dark mode */
-    --venue-finsbury: #7cb342;
-    --venue-central: #64b5f6;
+    --bg-primary: #141821;
+    --bg-secondary: #1c2230;
+    --bg-card: #242a3a;
+    --text-primary: #f5f0eb;
+    --text-secondary: #d4cdc5;
+    --text-muted: #a89f95;
+    --text-subtle: #7a7269;
+    --accent: #e09865;
+    --accent-hover: #eaaa7a;
+    --border-color: #2e3548;
+    --shadow-light: rgba(0, 0, 0, 0.25);
+    --shadow-accent: rgba(224, 152, 101, 0.2);
+    --disabled-bg: #2e3548;
+    --disabled-text: #5a6275;
   }
 }
 
-/* Global Styles */
+/* =============================================================================
+   GLOBAL STYLES
+   ============================================================================= */
 *,
 *::before,
 *::after {
@@ -94,8 +96,11 @@ html, body {
   padding: 0;
 }
 
-/* === MOBILE FIRST (Base styles for smallest screens) === */
+/* =============================================================================
+   MOBILE FIRST (Base styles for smallest screens)
+   ============================================================================= */
 
+/* [4] Container - DM Sans body font */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -103,18 +108,18 @@ html, body {
   padding: var(--space-md);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-base);
   line-height: 1.6;
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  min-height: 100dvh;
 }
 
-/* Page Title */
+/* [4] Page Title - DM Serif Display for elegant headings */
 h1 {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Serif Display', Georgia, serif;
   font-size: var(--font-2xl);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--text-primary);
   text-align: center;
   margin: 0 0 var(--space-lg);
@@ -123,7 +128,7 @@ h1 {
   letter-spacing: -0.025em;
 }
 
-/* Movie Card - Mobile stacked layout */
+/* [8] Movie Card - soft shadow for depth */
 .movie-block {
   display: flex;
   flex-direction: column;
@@ -133,6 +138,12 @@ h1 {
   background: var(--bg-card);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+/* Movie Left Column (Poster + Trailers on tablet+) */
+.movie-left {
+  display: contents;
 }
 
 /* Movie Poster */
@@ -158,10 +169,11 @@ h1 {
   color: var(--text-primary);
 }
 
+/* [4] Movie Title - DM Serif Display */
 .movie-title {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Serif Display', Georgia, serif;
   font-size: var(--font-xl);
-  font-weight: 700;
+  font-weight: 400;
   margin: 0;
   color: var(--text-primary);
   line-height: 1.3;
@@ -181,9 +193,10 @@ h1 {
   color: var(--text-secondary);
 }
 
+/* [5] Movie Details Labels - primary color, medium weight */
 .movie-details strong {
-  color: var(--label-color); /* Changed from accent - accent overused */
-  font-weight: 700;
+  color: var(--text-primary);
+  font-weight: 500;
   margin-right: var(--space-xs);
 }
 
@@ -196,12 +209,13 @@ h1 {
   border-left: 3px solid var(--accent);
 }
 
+/* [4] Showtimes Heading - DM Serif Display */
 .movie-showtimes h4 {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Serif Display', Georgia, serif;
   margin: 0 0 var(--space-md) 0;
   color: var(--text-primary);
   font-size: var(--font-md);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* Showtimes Grid - Single column on mobile */
@@ -211,7 +225,7 @@ h1 {
   gap: var(--space-sm);
 }
 
-/* Showtime Card */
+/* [8] Showtime Card - soft shadow + transitions */
 .showtime-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -222,12 +236,14 @@ h1 {
   grid-template-rows: auto auto;
   gap: var(--space-xs) var(--space-md);
   align-items: center;
+  box-shadow: 0 1px 3px var(--shadow-light);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
+/* [6] Showtime Card Hover - enhanced shadow */
 .showtime-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 2px 8px var(--shadow-accent);
+  box-shadow: 0 4px 16px var(--shadow-accent);
 }
 
 .showtime-card:focus-within {
@@ -235,13 +251,14 @@ h1 {
   box-shadow: 0 0 0 2px var(--shadow-accent);
 }
 
+/* [5] Showtime Cinema - muted color, medium weight */
 .showtime-cinema {
   grid-column: 1 / -1;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-sm);
-  color: var(--text-secondary); /* Changed from accent - accent overused */
-  font-weight: 600;
-  text-transform: capitalize; /* Changed from uppercase - less shouty */
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: capitalize;
   letter-spacing: 0.02em;
   padding-bottom: var(--space-xs);
   border-bottom: 1px solid var(--border-color);
@@ -253,14 +270,17 @@ h1 {
   font-weight: 400;
 }
 
+/* [4] Showtime Time - DM Sans UI font */
 .showtime-time {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-lg);
   color: var(--text-primary);
   font-weight: 700;
 }
 
-/* Book Button */
+/* =============================================================================
+   [6] BOOK BUTTON - Enhanced interactive states
+   ============================================================================= */
 .book-button {
   grid-column: 1 / -1;
   display: flex;
@@ -271,17 +291,18 @@ h1 {
   color: white;
   text-decoration: none;
   border-radius: var(--radius-sm);
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: var(--font-sm);
-  min-height: 44px; /* Touch target size */
+  min-height: 44px;
   -webkit-touch-callout: none;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .book-button:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-accent);
 }
 
 .book-button:focus-visible {
@@ -291,10 +312,12 @@ h1 {
 
 .book-button:active {
   transform: translateY(0);
+  box-shadow: none;
 }
 
-
-/* Videos Section */
+/* =============================================================================
+   VIDEOS SECTION
+   ============================================================================= */
 .movie-videos {
   margin-top: var(--space-sm);
   padding: var(--space-md);
@@ -303,12 +326,13 @@ h1 {
   border-left: 3px solid var(--border-color);
 }
 
+/* [4] Videos Heading - DM Serif Display */
 .movie-videos h4 {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Serif Display', Georgia, serif;
   margin: 0 0 var(--space-sm) 0;
   color: var(--text-primary);
   font-size: var(--font-md);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .movie-videos ul {
@@ -320,10 +344,11 @@ h1 {
   gap: var(--space-xs);
 }
 
+/* [6] Video Links - enhanced interactive states */
 .movie-videos ul li a {
   display: flex;
   align-items: center;
-  min-height: 44px; /* Touch target */
+  min-height: 44px;
   text-decoration: none;
   color: var(--accent);
   font-weight: 700;
@@ -335,7 +360,7 @@ h1 {
 
 .movie-videos ul li a:hover {
   background-color: var(--accent);
-  color: white;
+  color: var(--bg-primary);
 }
 
 .movie-videos ul li a:focus-visible {
@@ -343,8 +368,9 @@ h1 {
   outline-offset: 2px;
 }
 
-
-/* Loading State */
+/* =============================================================================
+   LOADING STATE
+   ============================================================================= */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -371,8 +397,9 @@ h1 {
   100% { transform: rotate(360deg); }
 }
 
+/* [4] Loading Message - DM Sans */
 .loading-message {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-lg);
   font-weight: 700;
   color: var(--accent);
@@ -398,7 +425,9 @@ h1 {
   font-size: var(--font-md);
 }
 
-/* Pagination */
+/* =============================================================================
+   PAGINATION
+   ============================================================================= */
 .pagination {
   display: flex;
   flex-wrap: wrap;
@@ -412,25 +441,27 @@ h1 {
   border: 1px solid var(--border-color);
 }
 
+/* [4] Pagination Buttons - DM Sans */
 .pagination button {
   background: var(--accent);
   color: white;
   border: none;
   padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-sm);
   font-weight: 700;
   border-radius: var(--radius-sm);
   min-height: 44px;
   min-width: 44px;
   -webkit-touch-callout: none;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .pagination button:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-accent);
 }
 
 .pagination button:focus-visible {
@@ -440,6 +471,7 @@ h1 {
 
 .pagination button:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: none;
 }
 
 .pagination button:disabled {
@@ -448,8 +480,9 @@ h1 {
   cursor: not-allowed;
 }
 
+/* [4] Pagination Text - DM Sans */
 .pagination span {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -459,8 +492,9 @@ h1 {
   padding-bottom: var(--space-xs);
 }
 
-
-/* === TABLET (600px+) === */
+/* =============================================================================
+   TABLET (600px+)
+   ============================================================================= */
 @media (min-width: 600px) {
   .container {
     padding: var(--space-lg);
@@ -474,15 +508,41 @@ h1 {
   /* Side-by-side layout for movie cards */
   .movie-block {
     flex-direction: row;
+    align-items: flex-start;
     gap: var(--space-lg);
     padding: var(--space-lg);
   }
 
-  .movie-poster {
-    width: 160px;
-    max-width: 160px;
+  /* Left column: poster + trailers */
+  .movie-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
     flex-shrink: 0;
+    width: 160px;
+  }
+
+  .movie-poster {
+    width: 100%;
+    max-width: none;
     margin: 0;
+  }
+
+  /* Trailers under poster on tablet+ */
+  .movie-left .movie-videos {
+    margin-top: 0;
+    padding: var(--space-sm);
+  }
+
+  .movie-left .movie-videos h4 {
+    font-size: var(--font-sm);
+    margin-bottom: var(--space-xs);
+  }
+
+  .movie-left .movie-videos ul li a {
+    font-size: var(--font-xs);
+    padding: var(--space-xs) var(--space-sm);
+    min-height: 36px;
   }
 
   .movie-info {
@@ -523,16 +583,16 @@ h1 {
   }
 }
 
-
-/* === LAPTOP (900px+) === */
+/* =============================================================================
+   LAPTOP (900px+)
+   ============================================================================= */
 @media (min-width: 900px) {
   .container {
     padding: var(--space-xl);
   }
 
-  .movie-poster {
+  .movie-left {
     width: 180px;
-    max-width: 180px;
   }
 
   /* Three column grid for showtimes */
@@ -540,9 +600,12 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .movie-showtimes,
-  .movie-videos {
+  .movie-showtimes {
     padding: var(--space-lg);
+  }
+
+  .movie-left .movie-videos {
+    padding: var(--space-md);
   }
 
   .pagination {
@@ -555,12 +618,12 @@ h1 {
   }
 }
 
-
-/* === DESKTOP (1200px+) === */
+/* =============================================================================
+   DESKTOP (1200px+)
+   ============================================================================= */
 @media (min-width: 1200px) {
-  .movie-poster {
+  .movie-left {
     width: 200px;
-    max-width: 200px;
   }
 
   /* Four column grid for showtimes */
@@ -569,10 +632,9 @@ h1 {
   }
 }
 
-
-
-
-/* === REDUCED MOTION === */
+/* =============================================================================
+   REDUCED MOTION
+   ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
