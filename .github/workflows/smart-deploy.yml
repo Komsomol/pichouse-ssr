@@ -1,0 +1,205 @@
+name: Smart Deploy (Only if Data Changed)
+
+on:
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy even if data unchanged'
+        required: false
+        default: 'false'
+        type: boolean
+  
+  # Scheduled trigger - Daily at 6 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  DATA_HASH_FILE: '.data-hash'
+
+jobs:
+  check-for-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      movie_count: ${{ steps.check.outputs.movie_count }}
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔍 Fetch current movie data and check for changes
+        id: check
+        env:
+          COOKIE: ${{ secrets.COOKIE }}
+        run: |
+          # Fetch movie data from Picturehouse API
+          echo "Fetching movie data..."
+          
+          RESPONSE=$(curl -s -X POST "https://www.picturehouses.com/api/get-movies-ajax?start_date=show_all_dates&cinema_id=029" \
+            -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" \
+            -H "Accept: */*" \
+            -H "Origin: https://www.picturehouses.com" \
+            -H "X-Requested-With: XMLHttpRequest" \
+            -H "Cookie: $COOKIE" \
+            --data "" 2>/dev/null || echo '{"movies":[]}')
+          
+          # Extract movie titles and showtimes to create a hash
+          # This creates a fingerprint of the current movie schedule
+          NEW_HASH=$(echo "$RESPONSE" | node -e "
+            const chunks = [];
+            process.stdin.on('data', c => chunks.push(c));
+            process.stdin.on('end', () => {
+              try {
+                const data = JSON.parse(Buffer.concat(chunks).toString());
+                const movies = data.movies || [];
+                // Create fingerprint from titles and showtime counts
+                const fingerprint = movies
+                  .map(m => m.Title + ':' + (m.show_times?.length || 0))
+                  .sort()
+                  .join('|');
+                const crypto = require('crypto');
+                console.log(crypto.createHash('md5').update(fingerprint).digest('hex'));
+              } catch (e) {
+                console.log('error');
+              }
+            });
+          ")
+          
+          MOVIE_COUNT=$(echo "$RESPONSE" | node -e "
+            const chunks = [];
+            process.stdin.on('data', c => chunks.push(c));
+            process.stdin.on('end', () => {
+              try {
+                const data = JSON.parse(Buffer.concat(chunks).toString());
+                console.log(data.movies?.length || 0);
+              } catch (e) {
+                console.log(0);
+              }
+            });
+          ")
+          
+          echo "New data hash: $NEW_HASH"
+          echo "Movie count: $MOVIE_COUNT"
+          echo "movie_count=$MOVIE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Get previous hash from cache or artifact
+          OLD_HASH=""
+          if [ -f "$DATA_HASH_FILE" ]; then
+            OLD_HASH=$(cat "$DATA_HASH_FILE")
+          fi
+          echo "Previous hash: $OLD_HASH"
+          
+          # Check if force deploy
+          FORCE="${{ github.event.inputs.force_deploy }}"
+          
+          # Determine if we should deploy
+          if [ "$FORCE" = "true" ]; then
+            echo "🔄 Force deploy requested"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          elif [ "$NEW_HASH" = "error" ]; then
+            echo "⚠️ Failed to fetch data, deploying anyway"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          elif [ "$NEW_HASH" != "$OLD_HASH" ]; then
+            echo "✨ Data has changed! Will deploy."
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "😴 No changes detected. Skipping deploy."
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Save new hash for comparison
+          echo "$NEW_HASH" > "$DATA_HASH_FILE"
+
+      - name: 💾 Cache data hash
+        if: steps.check.outputs.should_deploy == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.DATA_HASH_FILE }}
+          key: data-hash-${{ github.run_id }}
+
+      - name: 📤 Restore previous hash for next run
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.DATA_HASH_FILE }}
+          key: data-hash-
+          restore-keys: |
+            data-hash-
+
+  build-and-deploy:
+    needs: check-for-updates
+    if: needs.check-for-updates.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run tests
+        run: npm test
+
+      - name: 🏗️ Generate static site
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          COOKIE: ${{ secrets.COOKIE }}
+        run: npm run generate
+
+      - name: 📊 Build summary
+        run: |
+          echo "### 🎬 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Movies found:** ${{ needs.check-for-updates.outputs.movie_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build size:** $(du -sh .output/public/ | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pichouse-ssr
+          directory: .output/public
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+      - name: ✅ Post deployment summary
+        run: |
+          echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Live URL:** https://pichouse-ssr.pages.dev" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** Tomorrow at 6 AM UTC" >> $GITHUB_STEP_SUMMARY
+
+  skip-notification:
+    needs: check-for-updates
+    if: needs.check-for-updates.outputs.should_deploy == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 😴 No changes detected
+        run: |
+          echo "### 😴 Skipped Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No changes detected in movie data. Deployment skipped to save build minutes." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Movies in API:** ${{ needs.check-for-updates.outputs.movie_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** Tomorrow at 6 AM UTC" >> $GITHUB_STEP_SUMMARY
+

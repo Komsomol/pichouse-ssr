@@ -1,0 +1,73 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+  
+  # Scheduled trigger - Daily at 6 AM UTC (6 AM GMT / 7 AM BST)
+  schedule:
+    - cron: '0 6 * * *'
+  
+  # Also deploy on push to main (optional - remove if you only want scheduled)
+  push:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run tests
+        run: npm test
+
+      - name: 🏗️ Generate static site
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          COOKIE: ${{ secrets.COOKIE }}
+        run: npm run generate
+
+      - name: 📊 Show build output
+        run: |
+          echo "Build completed!"
+          ls -la .output/public/ | head -20
+          du -sh .output/public/
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pichouse-ssr
+          directory: .output/public
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Custom branch name for preview deployments
+          branch: ${{ github.ref_name }}
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "📺 Your site is live at: https://pichouse-ssr.pages.dev"
+          echo "⏰ Next scheduled build: Tomorrow at 6 AM UTC"
+
