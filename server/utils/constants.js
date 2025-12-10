@@ -3,9 +3,10 @@
  */
 
 // Cinema configuration
+// Cinema IDs verified from picturehouses.com website JavaScript
 export const CINEMA_IDS = {
-	FINSBURY_PARK: '001',
-	PICTUREHOUSE_CENTRAL: '021',
+	FINSBURY_PARK: '031',
+	PICTUREHOUSE_CENTRAL: '022',
 };
 
 export const CINEMA_NAMES = {

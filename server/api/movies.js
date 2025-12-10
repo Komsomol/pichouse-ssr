@@ -141,6 +141,11 @@ export default defineEventHandler(async (_event) => {
 					),
 				}));
 
+				// Sort showtimes by date (earliest first)
+				showtimesWithBookingUrls.sort((a, b) =>
+					new Date(a.Showtime) - new Date(b.Showtime),
+				);
+
 				return {
 					...movie,
 					screen1Showtimes: showtimesWithBookingUrls,
