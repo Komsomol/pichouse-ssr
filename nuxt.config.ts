@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
 	// Remove @nuxtjs/axios module
 	modules: [],
-	ssr: false,
+	ssr: true,
 	devtools: { enabled: true },
 	css: [
 		'normalize.css', // If using normalize.css from npm

@@ -199,4 +199,4 @@ const goToPageAndScroll = (pageNumber) => {
 };
 </script>
 
-<style scoped src="~/components/movies/MovieListStyles.css"></style>
+<style src="~/components/movies/MovieListStyles.css"></style>
