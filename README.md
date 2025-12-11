@@ -1,8 +1,12 @@
 # PicHouse SSR - Picturehouse Cinema Schedule
 
+[![Live Site](https://img.shields.io/badge/🎬_Live_Site-pichouse--ssr.pages.dev-blue?style=for-the-badge)](https://pichouse-ssr.pages.dev)
+[![Deploy](https://img.shields.io/badge/Deploy-Cloudflare_Pages-orange?style=flat-square)](https://pichouse-ssr.pages.dev)
+[![Daily Build](https://github.com/Komsomol/pichouse-ssr/actions/workflows/deploy.yml/badge.svg)](https://github.com/Komsomol/pichouse-ssr/actions/workflows/deploy.yml)
+
 A statically generated website displaying movie showtimes for Picturehouse Cinemas (Finsbury Park & Picturehouse Central). Features movie trailers, ratings, and direct booking links.
 
-**Live Site:** https://pichouse-ssr.pages.dev
+### 🔗 **[View Live Site → pichouse-ssr.pages.dev](https://pichouse-ssr.pages.dev)**
 
 ## Features
 
