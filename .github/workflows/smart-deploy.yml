@@ -9,7 +9,7 @@ on:
         required: false
         default: 'false'
         type: boolean
-  
+
   # Scheduled trigger - Daily at 6 AM UTC
   schedule:
     - cron: '0 6 * * *'
@@ -28,7 +28,7 @@ jobs:
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
       movie_count: ${{ steps.check.outputs.movie_count }}
-    
+
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
@@ -45,7 +45,7 @@ jobs:
         run: |
           # Fetch movie data from Picturehouse API
           echo "Fetching movie data..."
-          
+
           RESPONSE=$(curl -s -X POST "https://www.picturehouses.com/api/get-movies-ajax?start_date=show_all_dates&cinema_id=029" \
             -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" \
             -H "Accept: */*" \
@@ -53,7 +53,7 @@ jobs:
             -H "X-Requested-With: XMLHttpRequest" \
             -H "Cookie: $COOKIE" \
             --data "" 2>/dev/null || echo '{"movies":[]}')
-          
+
           # Extract movie titles and showtimes to create a hash
           # This creates a fingerprint of the current movie schedule
           NEW_HASH=$(echo "$RESPONSE" | node -e "
@@ -75,7 +75,7 @@ jobs:
               }
             });
           ")
-          
+
           MOVIE_COUNT=$(echo "$RESPONSE" | node -e "
             const chunks = [];
             process.stdin.on('data', c => chunks.push(c));
@@ -88,21 +88,21 @@ jobs:
               }
             });
           ")
-          
+
           echo "New data hash: $NEW_HASH"
           echo "Movie count: $MOVIE_COUNT"
           echo "movie_count=$MOVIE_COUNT" >> $GITHUB_OUTPUT
-          
+
           # Get previous hash from cache or artifact
           OLD_HASH=""
           if [ -f "$DATA_HASH_FILE" ]; then
             OLD_HASH=$(cat "$DATA_HASH_FILE")
           fi
           echo "Previous hash: $OLD_HASH"
-          
+
           # Check if force deploy
           FORCE="${{ github.event.inputs.force_deploy }}"
-          
+
           # Determine if we should deploy
           if [ "$FORCE" = "true" ]; then
             echo "🔄 Force deploy requested"
@@ -117,7 +117,7 @@ jobs:
             echo "😴 No changes detected. Skipping deploy."
             echo "should_deploy=false" >> $GITHUB_OUTPUT
           fi
-          
+
           # Save new hash for comparison
           echo "$NEW_HASH" > "$DATA_HASH_FILE"
 
@@ -140,7 +140,7 @@ jobs:
     needs: check-for-updates
     if: needs.check-for-updates.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4

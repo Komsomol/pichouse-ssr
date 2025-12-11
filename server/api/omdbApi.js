@@ -2,7 +2,7 @@ import axios from 'axios';
 import { tmdbCache } from '../utils/cache.js';
 import { cleanTitleForSearch } from './filterMovies.js';
 
-const OMDB_API_KEY = process.env.OMDB_API_KEY || 'b78dca4e';
+const OMDB_API_KEY = process.env.OMDB_API_KEY;
 const OMDB_BASE_URL = 'http://www.omdbapi.com/';
 
 /**

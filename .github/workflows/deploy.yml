@@ -3,11 +3,11 @@ name: Deploy to Cloudflare Pages
 on:
   # Manual trigger
   workflow_dispatch:
-  
+
   # Scheduled trigger - Daily at 6 AM UTC (6 AM GMT / 7 AM BST)
   schedule:
     - cron: '0 6 * * *'
-  
+
   # Also deploy on push to main (optional - remove if you only want scheduled)
   push:
     branches:
@@ -24,7 +24,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
