@@ -1,138 +1,214 @@
-# Cloudflare Pages Deployment Setup
+# Automated Deployment to Cloudflare Pages
 
-This guide walks you through setting up automated deployments to Cloudflare Pages via GitHub Actions.
+This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated deployments. Movie data is refreshed daily without any manual intervention.
 
-## Overview
+## How It Works
 
 ```
-GitHub Actions (scheduled daily at 6 AM UTC)
-    │
-    ├── Checks if movie data has changed
-    │   └── If no changes → Skip build (saves minutes)
-    │
-    ├── Runs tests
-    ├── Generates static site with fresh data
-    │
-    └── Deploys to Cloudflare Pages
-            │
-            └── https://pichouse-ssr.pages.dev
-                (or your custom domain)
+┌─────────────────────────────────────────────────────────────────┐
+│                    GitHub Actions (Daily 6 AM UTC)              │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Checkout code from repository                               │
+│  2. Install dependencies (npm ci)                               │
+│  3. Run tests (npm test)                                        │
+│  4. Fetch fresh movie data from Picturehouse API                │
+│  5. Generate static HTML (npm run generate)                     │
+│  6. Deploy to Cloudflare Pages via Wrangler CLI                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Cloudflare Pages (CDN)                       │
+├─────────────────────────────────────────────────────────────────┤
+│  • Global edge network (fast worldwide)                         │
+│  • Automatic HTTPS                                              │
+│  • URL: https://pichouse-ssr.pages.dev                          │
+│  • Custom domain support                                        │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Setup Steps
+## Architecture
 
-### Step 1: Create Cloudflare Pages Project
-
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Navigate to **Workers & Pages** → **Pages**
-3. Click **Create a project** → **Direct Upload**
-4. Name your project: `pichouse-ssr`
-5. Upload any placeholder file (we'll deploy via GitHub later)
-6. Click **Save and Deploy**
-
-### Step 2: Create Cloudflare API Token
-
-1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Click **Create Token**
-3. Use the **Custom token** option
-4. Configure:
-   - **Token name:** `GitHub Actions - Pichouse SSR`
-   - **Permissions:**
-     - `Account` → `Cloudflare Pages` → `Edit`
-   - **Account Resources:**
-     - `Include` → `Your Account`
-5. Click **Continue to summary** → **Create Token**
-6. **Copy the token** (you won't see it again!)
-
-### Step 3: Add GitHub Secrets
-
-Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
-
-Add these secrets:
-
-| Secret Name | Value |
-|-------------|-------|
-| `CLOUDFLARE_API_TOKEN` | The token you created in Step 2 |
-| `CLOUDFLARE_ACCOUNT_ID` | `97f7a5d148038c354c06751ca74d44e1` |
-| `TMDB_TOKEN` | Your TMDb API token (from .env) |
-| `OMDB_API_KEY` | `b78dca4e` |
-| `COOKIE` | Your Picturehouse cookie (from .env) |
-
-### Step 4: Test the Deployment
-
-1. Go to **Actions** tab in your GitHub repo
-2. Select **Smart Deploy (Only if Data Changed)**
-3. Click **Run workflow** → **Run workflow**
-4. Watch it build and deploy!
-
-### Step 5: Set Up Custom Domain (Optional)
-
-To use `cinema.voidcat.com`:
-
-1. In Cloudflare Pages → your project → **Custom domains**
-2. Click **Set up a custom domain**
-3. Enter: `cinema.voidcat.com`
-4. Follow the DNS instructions (usually adding a CNAME record)
+| Component | Role |
+|-----------|------|
+| **GitHub Actions** | Scheduler + CI/CD runner (runs builds on schedule) |
+| **Wrangler CLI** | Cloudflare's CLI tool (creates project & deploys) |
+| **Cloudflare Pages** | Static site hosting with global CDN |
+| **Nuxt 3** | Generates static HTML at build time |
+| **TMDb/OMDB APIs** | Movie metadata, trailers, posters |
+| **Picturehouse API** | Cinema showtimes and availability |
 
 ## Workflow Files
 
-### `deploy.yml` - Simple Deploy
-- Deploys on every push to `main`
-- Also runs daily at 6 AM UTC
-- Always builds (doesn't check for changes)
-
-### `smart-deploy.yml` - Smart Deploy (Recommended)
+### `deploy.yml` - Simple Daily Deploy
 - Runs daily at 6 AM UTC
-- Checks if movie data has changed
-- Only builds if data is different (saves build minutes)
-- Can be force-triggered manually
+- Triggers on every push to `main`
+- Always builds (doesn't check for changes)
+- Good for: Reliability, simplicity
 
-## Changing the Schedule
+### `smart-deploy.yml` - Smart Deploy
+- Runs daily at 6 AM UTC
+- Checks if Picturehouse movie data has changed
+- Skips build if data unchanged (saves GitHub Actions minutes)
+- Good for: Efficiency, reducing unnecessary builds
 
-Edit the cron schedule in `.github/workflows/smart-deploy.yml`:
+## Setup Guide
+
+### Prerequisites
+- GitHub repository (public or private)
+- Cloudflare account (free tier works)
+- API keys for TMDb and OMDB
+
+### Step 1: Create Cloudflare API Token
+
+1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
+2. Click **Create Token** → **Custom token**
+3. Configure:
+   - **Token name:** `GitHub Actions Deploy`
+   - **Permissions:** `Account` → `Cloudflare Pages` → `Edit`
+   - **Account Resources:** `Include` → Your account
+4. Click **Continue to summary** → **Create Token**
+5. **Copy the token immediately** (you won't see it again!)
+
+### Step 2: Get Your Cloudflare Account ID
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. Click on any domain or go to **Workers & Pages**
+3. Find **Account ID** in the right sidebar (32-character hex string)
+
+### Step 3: Add GitHub Repository Secrets
+
+Go to: `GitHub Repo` → `Settings` → `Secrets and variables` → `Actions`
+
+Add these 5 secrets:
+
+| Secret Name | Description |
+|-------------|-------------|
+| `CLOUDFLARE_API_TOKEN` | Token from Step 1 |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID from Step 2 |
+| `TMDB_TOKEN` | Your TMDb API Read Access Token (starts with `eyJ...`) |
+| `OMDB_API_KEY` | Your OMDB API key |
+| `COOKIE` | Picturehouse website cookie (for API access) |
+
+### Step 4: Trigger First Deployment
+
+1. Go to your repo's **Actions** tab
+2. Select **Deploy to Cloudflare Pages**
+3. Click **Run workflow** → **Run workflow**
+4. Watch the build complete (~1-2 minutes)
+
+The Wrangler CLI will automatically create the Cloudflare Pages project on first deploy!
+
+### Step 5: Verify Deployment
+
+Your site is now live at: `https://pichouse-ssr.pages.dev`
+
+## Custom Domain Setup (Optional)
+
+To use a custom domain like `cinema.yourdomain.com`:
+
+1. Go to Cloudflare Dashboard → **Workers & Pages** → **pichouse-ssr**
+2. Click **Custom domains** tab
+3. Click **Set up a custom domain**
+4. Enter your subdomain (e.g., `cinema.yourdomain.com`)
+5. Add the CNAME record to your DNS:
+   ```
+   CNAME  cinema  pichouse-ssr.pages.dev
+   ```
+6. Wait for SSL certificate (usually instant if domain is on Cloudflare)
+
+## Schedule Configuration
+
+Edit the cron expression in `.github/workflows/deploy.yml`:
 
 ```yaml
 schedule:
   - cron: '0 6 * * *'  # Daily at 6 AM UTC
 ```
 
-Common schedules:
-- `0 6 * * *` - Daily at 6 AM UTC
-- `0 6 * * 0` - Weekly on Sunday at 6 AM UTC
-- `0 6 * * 1,4` - Monday and Thursday at 6 AM UTC
-- `0 */6 * * *` - Every 6 hours
+**Common schedules:**
+| Cron | Description |
+|------|-------------|
+| `0 6 * * *` | Daily at 6 AM UTC |
+| `0 6 * * 0` | Weekly on Sundays |
+| `0 6 * * 1,4` | Monday and Thursday |
+| `0 */12 * * *` | Every 12 hours |
 
-## Monitoring
+## Monitoring & Notifications
 
-- **Build logs:** GitHub Actions tab
-- **Deployment status:** Cloudflare Pages dashboard
-- **Usage:** Cloudflare dashboard → Workers & Pages → Usage
+### Build Status
+- Check the **Actions** tab in GitHub for build logs
+- GitHub sends email notifications on workflow failures (enabled by default)
+
+### Configure Notifications
+Go to: `GitHub` → `Settings` → `Notifications` → `Actions`
+
+Options:
+- Email on failure only
+- Email on all runs
+- Disable notifications
+
+### Cloudflare Dashboard
+- View deployment history: **Workers & Pages** → **pichouse-ssr** → **Deployments**
+- Check usage/bandwidth: **Workers & Pages** → **Overview**
 
 ## Costs
 
-### GitHub Actions (Public Repo)
-- ✅ **Free** - unlimited minutes for public repos
+### GitHub Actions
+- **Public repos:** ✅ Free (unlimited minutes)
+- **Private repos:** 2,000 free minutes/month, then $0.008/minute
 
 ### Cloudflare Pages (Free Tier)
-- ✅ 500 builds/month (daily = ~30 builds)
+- ✅ 500 builds/month (daily = ~30 builds, plenty of headroom)
 - ✅ Unlimited bandwidth
 - ✅ Unlimited requests
-- ✅ Custom domains with HTTPS
+- ✅ Automatic HTTPS
+- ✅ Custom domains
+
+**Total cost for this project: $0/month** 🎉
 
 ## Troubleshooting
 
-### Build fails with "TMDB_TOKEN not found"
-Make sure you added all secrets in GitHub → Settings → Secrets → Actions
+### "Project not found" Error
+The Wrangler CLI should auto-create the project. If it fails:
+1. Check `CLOUDFLARE_API_TOKEN` has `Cloudflare Pages: Edit` permission
+2. Check `CLOUDFLARE_ACCOUNT_ID` is correct
+3. Try running workflow again
 
-### "Project not found" error
-Create the Cloudflare Pages project first (Step 1)
+### Build Fails - "TMDB_TOKEN not found"
+Ensure all 5 secrets are added in GitHub → Settings → Secrets → Actions
 
-### Site shows old data
-Check the GitHub Actions logs - the build might have been skipped due to no data changes.
-Use the "Force deploy" option in manual trigger.
+### Site Shows Old Data
+1. Check GitHub Actions logs - was the build successful?
+2. For smart-deploy: data might be unchanged (working as intended)
+3. Manually trigger with "Force deploy" option
 
-### Custom domain not working
-1. Check DNS propagation (can take up to 24 hours)
-2. Ensure CNAME points to `pichouse-ssr.pages.dev`
-3. Check Cloudflare Pages → Custom domains for SSL status
+### Tests Failing
+Run locally first: `npm test`
+Fix any issues, then push to trigger new deployment
 
+### Custom Domain SSL Issues
+1. Ensure domain is proxied through Cloudflare (orange cloud)
+2. Check SSL/TLS mode is "Full" or "Full (strict)"
+3. Wait up to 24 hours for DNS propagation
+
+## Local Development vs Production
+
+| Aspect | Local (`npm run dev`) | Production (Cloudflare) |
+|--------|----------------------|-------------------------|
+| Data refresh | On each page load | Once per day (at build) |
+| URL | `localhost:4000` | `pichouse-ssr.pages.dev` |
+| API calls | Direct to TMDb/OMDB/Picturehouse | Pre-fetched at build time |
+| Speed | Slower (fetching data) | Fast (static HTML) |
+
+## Files Overview
+
+```
+.github/
+  workflows/
+    deploy.yml         # Simple daily deployment
+    smart-deploy.yml   # Smart deployment (checks for changes)
+
+.env.example           # Template for environment variables
+DEPLOYMENT.md          # This file
+```
