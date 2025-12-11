@@ -55,15 +55,13 @@ jobs:
           du -sh .output/public/
 
       - name: 🚀 Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: pichouse-ssr
-          directory: .output/public
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: Custom branch name for preview deployments
-          branch: ${{ github.ref_name }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler
+          wrangler pages project create pichouse-ssr --production-branch main 2>/dev/null || true
+          wrangler pages deploy .output/public --project-name pichouse-ssr --branch main
 
       - name: ✅ Deployment complete
         run: |
