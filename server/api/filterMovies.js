@@ -15,7 +15,7 @@ export const cleanTitleForSearch = (title) => {
 
 	// UK to US title mappings (UK cinemas use different names than TMDb/OMDB)
 	const regionalTitleMappings = {
-		Zootropolis: 'Zootopia',
+		'Zootropolis': 'Zootopia',
 		'Paddington in Peru': 'Paddington in Peru', // Same, but kept for reference
 	};
 
@@ -101,7 +101,7 @@ export const sanitizeMovieTitle = (title) => {
 		'(Rerelease)',
 		'(Paddington Day)',
 		'FILM CLUB:',
-		"Doc'n Roll Film Festival Presents:",
+		'Doc\'n Roll Film Festival Presents:',
 		'Atomic Origins:',
 		'(4K Restoration)',
 		'(40th Anniversary)',
@@ -171,15 +171,15 @@ export const filterMoviesByCinemaAndRemoveDuplicates = (movies, cinemaIds) => {
 			.filter((movie) => {
 				// Skip excluded movies
 				if (
-					titleExclusionList.some((excluded) =>
-						movie.Title.includes(excluded)
+					titleExclusionList.some(excluded =>
+						movie.Title.includes(excluded),
 					)
 				) {
 					return false;
 				}
 				// Filter by cinema - include if available at ANY target cinema
-				return movie.available_cinemas.some((cinema) =>
-					targetCinemas.includes(cinema)
+				return movie.available_cinemas.some(cinema =>
+					targetCinemas.includes(cinema),
 				);
 			})
 			// Step 2: Sanitize titles and create new objects (immutable transformation)
