@@ -72,6 +72,7 @@ export default function useMovieList() {
 	const goToPage = (pageNumber) => {
 		if (pageNumber > 0 && pageNumber <= totalPages.value) {
 			currentPage.value = pageNumber;
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		}
 	};
 
