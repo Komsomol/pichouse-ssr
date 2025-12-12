@@ -15,7 +15,7 @@ export const cleanTitleForSearch = (title) => {
 
 	// UK to US title mappings (UK cinemas use different names than TMDb/OMDB)
 	const regionalTitleMappings = {
-		'Zootropolis': 'Zootopia',
+		Zootropolis: 'Zootopia',
 		'Paddington in Peru': 'Paddington in Peru', // Same, but kept for reference
 	};
 
@@ -101,7 +101,7 @@ export const sanitizeMovieTitle = (title) => {
 		'(Rerelease)',
 		'(Paddington Day)',
 		'FILM CLUB:',
-		'Doc\'n Roll Film Festival Presents:',
+		"Doc'n Roll Film Festival Presents:",
 		'Atomic Origins:',
 		'(4K Restoration)',
 		'(40th Anniversary)',
@@ -165,34 +165,42 @@ export const filterMoviesByCinemaAndRemoveDuplicates = (movies, cinemaIds) => {
 	// Normalize to array for consistent handling
 	const targetCinemas = Array.isArray(cinemaIds) ? cinemaIds : [cinemaIds];
 
-	return movies
-		// Step 1: Filter by cinema(s) and excluded titles
-		.filter((movie) => {
-			// Skip excluded movies
-			if (titleExclusionList.some(excluded => movie.Title.includes(excluded))) {
-				return false;
-			}
-			// Filter by cinema - include if available at ANY target cinema
-			return movie.available_cinemas.some(cinema => targetCinemas.includes(cinema));
-		})
-		// Step 2: Sanitize titles and create new objects (immutable transformation)
-		.map((movie) => {
-			const sanitizedTitle = sanitizeMovieTitle(movie.Title);
-			return {
-				...movie,
-				Title: sanitizedTitle || movie.Title, // Use sanitized or original
-				_originalTitle: movie.Title, // Keep original for reference
-			};
-		})
-		// Step 3: Filter out invalid titles and duplicates
-		// Use ORIGINAL title for deduplication to keep different screenings
-		// (e.g., "The Shining - Original Cut" vs "The Shining (45th Anniversary)")
-		.filter((movie) => {
-			// Filter out if the sanitized title is null or already processed
-			if (!movie.Title || uniqueTitles.has(movie._originalTitle)) {
-				return false;
-			}
-			uniqueTitles.add(movie._originalTitle);
-			return true;
-		});
+	return (
+		movies
+			// Step 1: Filter by cinema(s) and excluded titles
+			.filter((movie) => {
+				// Skip excluded movies
+				if (
+					titleExclusionList.some((excluded) =>
+						movie.Title.includes(excluded)
+					)
+				) {
+					return false;
+				}
+				// Filter by cinema - include if available at ANY target cinema
+				return movie.available_cinemas.some((cinema) =>
+					targetCinemas.includes(cinema)
+				);
+			})
+			// Step 2: Sanitize titles and create new objects (immutable transformation)
+			.map((movie) => {
+				const sanitizedTitle = sanitizeMovieTitle(movie.Title);
+				return {
+					...movie,
+					Title: sanitizedTitle || movie.Title, // Use sanitized or original
+					_originalTitle: movie.Title, // Keep original for reference
+				};
+			})
+			// Step 3: Filter out invalid titles and duplicates
+			// Use ORIGINAL title for deduplication to keep different screenings
+			// (e.g., "The Shining - Original Cut" vs "The Shining (45th Anniversary)")
+			.filter((movie) => {
+				// Filter out if the sanitized title is null or already processed
+				if (!movie.Title || uniqueTitles.has(movie._originalTitle)) {
+					return false;
+				}
+				uniqueTitles.add(movie._originalTitle);
+				return true;
+			})
+	);
 };
