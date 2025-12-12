@@ -13,6 +13,18 @@ export const cleanTitleForSearch = (title) => {
 
 	let cleaned = title;
 
+	// UK to US title mappings (UK cinemas use different names than TMDb/OMDB)
+	const regionalTitleMappings = {
+		'Zootropolis': 'Zootopia',
+		'Paddington in Peru': 'Paddington in Peru', // Same, but kept for reference
+	};
+
+	// Apply regional title mappings
+	Object.entries(regionalTitleMappings).forEach(([ukTitle, usTitle]) => {
+		const regex = new RegExp(ukTitle, 'gi');
+		cleaned = cleaned.replace(regex, usTitle);
+	});
+
 	// Remove format/screening indicators (order matters - specific patterns first)
 	const patternsToRemove = [
 		// Format indicators
