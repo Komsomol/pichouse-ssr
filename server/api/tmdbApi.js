@@ -1,11 +1,8 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
 import { tmdbCache } from '../utils/cache.js';
 import { cleanTitleForSearch } from './filterMovies.js';
 
-dotenv.config(); // Load environment variables
-
-const TMDB_TOKEN = process.env.TMDB_TOKEN; // Ensure this token is correct and exists
+const TMDB_TOKEN = process.env.TMDB_TOKEN;
 
 // Configuration: Specific movie matches (pure data)
 const specificMovieMatches = {
@@ -30,19 +27,6 @@ const findLatestMovie = movies =>
 		const latestReleaseDate = new Date(latest.release_date);
 		return movieReleaseDate > latestReleaseDate ? movie : latest;
 	});
-
-// Helper to create YouTube trailer object from URL (currently unused but kept for future use)
-// eslint-disable-next-line no-unused-vars
-const createYouTubeTrailer = (url) => {
-	const key = url?.split('v=')[1];
-	return key
-		? {
-				key,
-				name: 'Official Trailer',
-				site: 'YouTube',
-			}
-		: null;
-};
 
 const filterTrailerVideos = videos =>
 	videos.filter(video => /trailer/i.test(video.name));

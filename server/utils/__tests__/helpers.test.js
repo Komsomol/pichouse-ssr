@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
 	createFallbackVideos,
 	meetsTimeRequirement,
-	isAfterMinHour,
 	generateBookingUrl,
 } from '../helpers.js';
 
@@ -82,23 +81,6 @@ describe('meetsTimeRequirement', () => {
 			const sunday8pm = '2025-12-14T20:00:00';
 			expect(meetsTimeRequirement(sunday8pm, minHour)).toBe(true);
 		});
-	});
-});
-
-describe('isAfterMinHour (deprecated)', () => {
-	it('should return true for times after min hour', () => {
-		const result = isAfterMinHour('2025-12-10T19:00:00', 18);
-		expect(result).toBe(true);
-	});
-
-	it('should return true for times at exactly min hour', () => {
-		const result = isAfterMinHour('2025-12-10T18:00:00', 18);
-		expect(result).toBe(true);
-	});
-
-	it('should return false for times before min hour', () => {
-		const result = isAfterMinHour('2025-12-10T14:00:00', 18);
-		expect(result).toBe(false);
 	});
 });
 

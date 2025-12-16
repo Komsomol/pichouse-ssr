@@ -43,14 +43,6 @@ export const meetsTimeRequirement = (showtimeString, minHour) => {
 };
 
 /**
- * @deprecated Use meetsTimeRequirement instead
- */
-export const isAfterMinHour = (showtimeString, minHour) => {
-	const showtimeDate = new Date(showtimeString);
-	return showtimeDate.getHours() >= minHour;
-};
-
-/**
  * Generates a booking URL for a cinema showtime
  * @param {string} cinemaId - Cinema identifier
  * @param {string} sessionId - Session identifier
