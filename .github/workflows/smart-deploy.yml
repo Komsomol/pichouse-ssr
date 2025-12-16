@@ -7,7 +7,7 @@ on:
       force_deploy:
         description: 'Force deploy even if data unchanged'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
   # Scheduled trigger - Daily at 6 AM UTC
