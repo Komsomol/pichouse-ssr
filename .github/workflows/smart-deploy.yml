@@ -25,6 +25,9 @@ env:
 jobs:
   check-for-updates:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # needed by keepalive-workflow
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
       movie_count: ${{ steps.check.outputs.movie_count }}
@@ -135,6 +138,12 @@ jobs:
           key: data-hash-
           restore-keys: |
             data-hash-
+
+      # GitHub auto-disables scheduled workflows after 60 days without repo
+      # activity (this took the site down June 16 - July 7 2026). This step
+      # resets that timer via the API on every run, no dummy commits.
+      - name: 🔄 Keepalive
+        uses: gautamkrishnar/keepalive-workflow@v2
 
   build-and-deploy:
     needs: check-for-updates

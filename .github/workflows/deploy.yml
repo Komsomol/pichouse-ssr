@@ -24,6 +24,9 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # needed by keepalive-workflow
 
     steps:
       - name: 📥 Checkout repository
@@ -68,4 +71,10 @@ jobs:
           echo "🎉 Deployment successful!"
           echo "📺 Your site is live at: https://pichouse-ssr.pages.dev"
           echo "⏰ Next scheduled build: Tomorrow at 6 AM UTC"
+
+      # GitHub auto-disables scheduled workflows after 60 days without repo
+      # activity (this took the site down June 16 - July 7 2026). This step
+      # resets that timer via the API on every run, no dummy commits.
+      - name: 🔄 Keepalive
+        uses: gautamkrishnar/keepalive-workflow@v2
 
