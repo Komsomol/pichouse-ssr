@@ -140,10 +140,12 @@ jobs:
             data-hash-
 
       # GitHub auto-disables scheduled workflows after 60 days without repo
-      # activity (this took the site down June 16 - July 7 2026). This step
-      # resets that timer via the API on every run, no dummy commits.
+      # activity (this took the site down June 16 - July 7 2026). Re-enabling
+      # the workflow via the API on every run resets that timer.
       - name: 🔄 Keepalive
-        uses: gautamkrishnar/keepalive-workflow@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/smart-deploy.yml/enable"
 
   build-and-deploy:
     needs: check-for-updates
