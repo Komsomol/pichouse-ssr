@@ -4,11 +4,9 @@ on:
   # Manual trigger
   workflow_dispatch:
 
-  # Scheduled trigger - Daily at 6 AM UTC (6 AM GMT / 7 AM BST)
-  schedule:
-    - cron: '0 6 * * *'
-
-  # Also deploy on push to main (optional - remove if you only want scheduled)
+  # No schedule here - the daily build is owned by smart-deploy.yml, which only
+  # rebuilds when the Picturehouse data actually changed. This workflow is for
+  # code changes (push) and manual runs.
   push:
     branches:
       - main
@@ -70,7 +68,7 @@ jobs:
         run: |
           echo "🎉 Deployment successful!"
           echo "📺 Your site is live at: https://pichouse-ssr.pages.dev"
-          echo "⏰ Next scheduled build: Tomorrow at 6 AM UTC"
+          echo "⏰ Daily data rebuilds are handled by smart-deploy.yml"
 
       # GitHub auto-disables scheduled workflows after 60 days without repo
       # activity (this took the site down June 16 - July 7 2026). Re-enabling

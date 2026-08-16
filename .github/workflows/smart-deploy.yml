@@ -41,6 +41,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # Must run BEFORE the check step - it populates $DATA_HASH_FILE with the
+      # previous run's hash so the comparison below has something to compare to.
+      - name: 📤 Restore previous data hash
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.DATA_HASH_FILE }}
+          key: data-hash-${{ github.run_id }}
+          restore-keys: |
+            data-hash-
+
       - name: 🔍 Fetch current movie data and check for changes
         id: check
         env:
@@ -124,20 +134,14 @@ jobs:
           # Save new hash for comparison
           echo "$NEW_HASH" > "$DATA_HASH_FILE"
 
+      # Saved unconditionally: on a skipped deploy the hash is unchanged, but
+      # re-saving keeps the cache entry from being evicted after 7 days idle.
+      # The run_id in the key makes it unique, so the save never collides.
       - name: 💾 Cache data hash
-        if: steps.check.outputs.should_deploy == 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{ env.DATA_HASH_FILE }}
           key: data-hash-${{ github.run_id }}
-
-      - name: 📤 Restore previous hash for next run
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.DATA_HASH_FILE }}
-          key: data-hash-
-          restore-keys: |
-            data-hash-
 
       # GitHub auto-disables scheduled workflows after 60 days without repo
       # activity (this took the site down June 16 - July 7 2026). Re-enabling
