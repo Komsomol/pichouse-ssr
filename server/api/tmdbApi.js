@@ -80,7 +80,7 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
 	catch (error) {
 		console.error(`Error fetching TMDb data for ${title}:`, error.message);
 		console.error('Error response data:', error.response?.data); // Log the detailed response data if available
-		throw new Error(`TMDb request failed with status: ${error.response?.status || 'unknown'}`);
+		throw new Error(`TMDb request failed with status: ${error.response?.status || 'unknown'}`, { cause: error });
 	}
 };
 

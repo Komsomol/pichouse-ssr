@@ -61,6 +61,6 @@ export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
 	}
 	catch (error) {
 		console.error('Error fetching from Picturehouse API:', error.message);
-		throw new Error(`Failed to fetch movies from Picturehouse API: ${error.message}`);
+		throw new Error(`Failed to fetch movies from Picturehouse API: ${error.message}`, { cause: error });
 	}
 };
