@@ -17,7 +17,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  # >=22 required: eslint-plugin-unicorn (via @nuxt/eslint-config) uses
+  # Set.prototype.union, which does not exist on Node 20.
+  NODE_VERSION: '22'
 
 jobs:
   build-and-deploy:
