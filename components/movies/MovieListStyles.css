@@ -146,10 +146,26 @@ h1 {
   display: contents;
 }
 
+/* On mobile .movie-left is display:contents, so the poster and trailers become
+   siblings of .movie-info. Left unordered they both render above the title,
+   pushing the film's name most of a screen down. Poster, then everything the
+   title introduces, then the trailer links. */
+.movie-poster {
+  order: 0;
+}
+
+.movie-info {
+  order: 1;
+}
+
+.movie-videos {
+  order: 2;
+}
+
 /* Movie Poster */
 .movie-poster {
   width: 100%;
-  max-width: 280px;
+  max-width: 200px;
   margin: 0 auto;
   border-radius: var(--radius-sm);
 }
@@ -218,10 +234,12 @@ h1 {
   font-weight: 400;
 }
 
-/* Showtimes Grid - Single column on mobile */
+/* Showtimes Grid - two columns even on mobile. A showtime is four short lines,
+   so a full-width card wastes most of its width and makes a 15-screening film
+   scroll for thousands of pixels. */
 .showtimes-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-sm);
 }
 
@@ -230,11 +248,10 @@ h1 {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: var(--space-md);
+  padding: var(--space-sm);
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  gap: var(--space-xs) var(--space-md);
+  grid-template-columns: 1fr;
+  gap: var(--space-xs);
   align-items: center;
   box-shadow: 0 1px 3px var(--shadow-light);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
@@ -253,7 +270,6 @@ h1 {
 
 /* [5] Showtime Cinema - muted color, medium weight */
 .showtime-cinema {
-  grid-column: 1 / -1;
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-sm);
   color: var(--text-muted);
@@ -268,21 +284,24 @@ h1 {
   font-size: var(--font-sm);
   color: var(--text-muted);
   font-weight: 400;
+  order: 2;
 }
 
-/* [4] Showtime Time - DM Sans UI font */
+/* [4] Showtime Time - DM Sans UI font.
+   Ordered above the date: the time is what you scan a showtimes grid for. */
 .showtime-time {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-lg);
   color: var(--text-primary);
   font-weight: 700;
+  order: 1;
 }
 
 /* =============================================================================
    [6] BOOK BUTTON - Enhanced interactive states
    ============================================================================= */
 .book-button {
-  grid-column: 1 / -1;
+  order: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -505,12 +524,51 @@ h1 {
     padding-bottom: var(--space-lg);
   }
 
+  .movie-block {
+    padding: var(--space-lg);
+  }
+
+  .movie-info {
+    gap: var(--space-md);
+  }
+
+  /* Roomier showtime cards - the column count and stacking are set in the
+     mobile base and carry up from there */
+  .showtimes-grid {
+    gap: var(--space-md);
+  }
+
+  .showtime-card {
+    padding: var(--space-md);
+  }
+
+  .book-button {
+    margin-top: var(--space-xs);
+  }
+
+  .pagination span {
+    order: 0;
+    width: auto;
+    padding-bottom: 0;
+    min-width: 120px;
+  }
+}
+
+/* =============================================================================
+   LARGE TABLET (768px+) - poster and trailers move into a side column
+
+   This starts at 768 rather than 600 deliberately. The poster column costs
+   ~180px, and below 768 that leaves the showtimes grid narrower than it is on a
+   phone, so cards wrap badly and grow taller than the space the side-by-side
+   layout saves. Small tablets keep the stacked mobile layout, which gives the
+   showtimes their full width.
+   ============================================================================= */
+@media (min-width: 768px) {
   /* Side-by-side layout for movie cards */
   .movie-block {
     flex-direction: row;
     align-items: flex-start;
     gap: var(--space-lg);
-    padding: var(--space-lg);
   }
 
   /* Left column: poster + trailers */
@@ -543,43 +601,6 @@ h1 {
     font-size: var(--font-xs);
     padding: var(--space-xs) var(--space-sm);
     min-height: 36px;
-  }
-
-  .movie-info {
-    gap: var(--space-md);
-  }
-
-  /* Two column grid for showtimes */
-  .showtimes-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-md);
-  }
-
-  .showtime-card {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto;
-    gap: var(--space-xs);
-    padding: var(--space-md);
-  }
-
-  .showtime-time {
-    order: 1;
-  }
-
-  .showtime-date {
-    order: 2;
-  }
-
-  .book-button {
-    order: 3;
-    margin-top: var(--space-xs);
-  }
-
-  .pagination span {
-    order: 0;
-    width: auto;
-    padding-bottom: 0;
-    min-width: 120px;
   }
 }
 
