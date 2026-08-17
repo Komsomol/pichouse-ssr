@@ -66,19 +66,6 @@ describe('Environment Variable Validation', () => {
 		});
 	});
 
-	describe('CINEMA_ID (optional)', () => {
-		it('should work without CINEMA_ID (should use default)', () => {
-			delete process.env.CINEMA_ID;
-			const defaultCinemaId = process.env.CINEMA_ID || '029';
-			expect(defaultCinemaId).toBe('029');
-		});
-
-		it('should accept custom CINEMA_ID', () => {
-			process.env.CINEMA_ID = '042';
-			expect(process.env.CINEMA_ID).toBe('042');
-		});
-	});
-
 	describe('Environment setup completeness', () => {
 		it('should have all required variables for production', () => {
 			process.env.TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MWJmYTZlYWMzNTNlOWM2YWYwYTI0NWJhOWZmMjA2ZiIsInN1YiI6IjU5M2VhYmI1OTI1MTQxMDU4ZjAzNDFkMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xAp5d19_8bhAmMPgiUFFTuuPmVrjtz6KyKECJ0pBx2w';
