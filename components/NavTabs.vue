@@ -12,6 +12,12 @@
 		>
 			Trailers
 		</NuxtLink>
+		<NuxtLink
+			to="/about"
+			class="nav-tab"
+		>
+			About
+		</NuxtLink>
 	</nav>
 </template>
 
