@@ -4,6 +4,10 @@
  * Ported from the Movie-Trailers project (data/channels.js). The `channelURL`
  * handle it also carried is unused here - the uploads playlist is derived from
  * the channel ID instead, so only the ID and display name are needed.
+ *
+ * Netflix, HBO and Hulu were dropped from the source list: this site exists to
+ * show what is on at the cinema, and those three release straight to streaming.
+ * Apple TV and Amazon Studios are kept - both put films in UK cinemas.
  */
 
 export const STUDIO_CHANNELS = [
@@ -16,7 +20,6 @@ export const STUDIO_CHANNELS = [
 	{ name: 'Magnolia Pictures & Magnet Releasing', channelID: 'UCneoi6WTgRjMh4otvpwzv8w' },
 	{ name: 'Marvel Entertainment', channelID: 'UCvC4D8onUfXzvjTOM-dBfEA' },
 	{ name: 'MGM', channelID: 'UCf5CjDJvsFvtVIhkfmKAwAA' },
-	{ name: 'Netflix', channelID: 'UCWOA1ZGywLbqmigxE4Qlvuw' },
 	{ name: 'Open Road Films', channelID: 'UClt5Bst8Ji05dZvTUdnO85g' },
 	{ name: 'Paramount Pictures', channelID: 'UCF9imwPMSGz4Vq1NiTWCC7g' },
 	{ name: 'Warner Bros. Pictures', channelID: 'UCjmJDM5pRKbUlVIzDYYWb6g' },
@@ -34,7 +37,6 @@ export const STUDIO_CHANNELS = [
 	{ name: 'Momentum Pictures', channelID: 'UCElLRsuDWeYdOT3GgNZAUeQ' },
 	{ name: 'Kinolorber', channelID: 'UCtlPYzQ188v4gHQ5VyikNiw' },
 	{ name: 'Blumhouse', channelID: 'UCCEfOHkckMXnoZQAjUZsMig' },
-	{ name: 'HBO', channelID: 'UCVTQuK2CaWaTgSsoNkn5AiQ' },
 	{ name: 'Star Wars', channelID: 'UCZGYJFUizSax-yElQaFDp5Q' },
 	{ name: 'Gunpowder & Sky', channelID: 'UCB9U0iEZ7mg4ysOkhFqzbAw' },
 	{ name: 'The Orchard Movies', channelID: 'UCkML5g9N_azgHB7KQJ5fWLw' },
@@ -56,7 +58,6 @@ export const STUDIO_CHANNELS = [
 	{ name: 'Searchlight Pictures', channelID: 'UCor9rW6PgxSQ9vUPWQdnaYQ' },
 	{ name: 'Miramax', channelID: 'UCaVwpbqM8dkhQvbL8XileAA' },
 	{ name: 'DreamWorks Animation', channelID: 'UCML7eumxGQaiFur_mNAebag' },
-	{ name: 'Hulu', channelID: 'UCE5mQnNl8Q4H2qcv4ikaXeA' },
 	{ name: 'Studiocanal UK', channelID: 'UCFSILgKCKo35QYGz8Kob51g' },
 	{ name: 'Shout! Studios', channelID: 'UCpHaAKu74UHvcYCi2g_PvBQ' },
 	{ name: 'Vertical Entertainment', channelID: 'UC_kr2hND7WcVRBV2AaazGrQ' },
