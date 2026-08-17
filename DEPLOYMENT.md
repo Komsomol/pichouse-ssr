@@ -40,9 +40,9 @@ This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated 
 
 ## Workflow Files
 
-### `deploy.yml` - Simple Daily Deploy
-- Runs daily at 6 AM UTC
-- Triggers on every push to `main`
+### `deploy.yml` - Push Deploy
+- Triggers on every push to `main`, plus manual dispatch
+- No schedule - the daily build belongs to `smart-deploy.yml`
 - Always builds (doesn't check for changes)
 - Good for: Reliability, simplicity
 
@@ -80,7 +80,7 @@ This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated 
 
 Go to: `GitHub Repo` → `Settings` → `Secrets and variables` → `Actions`
 
-Add these 5 secrets:
+Add these 6 secrets:
 
 | Secret Name | Description |
 |-------------|-------------|
@@ -89,6 +89,11 @@ Add these 5 secrets:
 | `TMDB_TOKEN` | Your TMDb API Read Access Token (starts with `eyJ...`) |
 | `OMDB_API_KEY` | Your OMDB API key |
 | `COOKIE` | Picturehouse website cookie (for API access) |
+| `YT_API_KEY` | YouTube Data API v3 key (powers the Trailers tab) |
+
+Note that `gh secret set NAME` needs the value piped in or typed at its prompt.
+Run non-interactively with neither, it stores an empty string - the secret then
+appears in `gh secret list` while the build behaves as though it is unset.
 
 ### Step 4: Trigger First Deployment
 
@@ -119,7 +124,9 @@ To use a custom domain like `cinema.yourdomain.com`:
 
 ## Schedule Configuration
 
-Edit the cron expression in `.github/workflows/deploy.yml`:
+The daily schedule lives in `.github/workflows/smart-deploy.yml`. `deploy.yml` has
+no cron - it runs on push and manual dispatch only, so the two do not both
+rebuild every morning.
 
 ```yaml
 schedule:
@@ -206,8 +213,8 @@ Fix any issues, then push to trigger new deployment
 ```
 .github/
   workflows/
-    deploy.yml         # Simple daily deployment
-    smart-deploy.yml   # Smart deployment (checks for changes)
+    deploy.yml         # Push and manual deployment
+    smart-deploy.yml   # Daily deployment (checks for changes first)
 
 .env.example           # Template for environment variables
 DEPLOYMENT.md          # This file
