@@ -9,6 +9,16 @@
  */
 
 import { TRAILER_CONFIG } from '../utils/constants';
+import { STUDIO_CHANNELS } from '../utils/channels';
+
+// Studio names we recognise, for stripping a "(Universal Pictures)" credit out
+// of a title before comparing it. Only exact parenthesised matches are removed:
+// several channel names ('Star Wars', 'Disney', 'Legendary') also occur inside
+// genuine film titles, so removing them wherever they appear would merge
+// unrelated trailers.
+const STUDIO_NAMES = new Set(
+	STUDIO_CHANNELS.map(channel => channel.name.toLowerCase()),
+);
 
 /**
  * Checks if a video title matches the search criteria.
@@ -140,6 +150,11 @@ export const getTrailersOnly = (
  * 18"). Any sequel marker sits before that clause, so "Official Trailer 2"
  * stays distinct from "Official Trailer" - digits are otherwise preserved.
  *
+ * Finally it drops a parenthesised studio credit, which a regional channel adds
+ * to say whose film it is ("Violent Night 2 | Official Trailer (Universal
+ * Pictures)" from Universal UK vs "Violent Night 2 | Official Trailer" from
+ * Universal Pictures itself).
+ *
  * @param {string} title - Raw video title
  * @returns {string} Normalized comparison key
  */
@@ -149,6 +164,8 @@ export const normalizeTitle = title =>
 		.replace(/[‘’]/g, '\'') // curly apostrophes -> straight
 		.replace(/[–—]/g, '-') // en/em dash -> hyphen
 		.replace(/\b(?:4k|uhd|hd|60fps|dolby vision)\b/g, '') // quality tags
+		.replace(/\(([^)]+)\)/g, (match, inner) =>
+			STUDIO_NAMES.has(inner.trim()) ? ' ' : match) // studio credit
 		.replace(/[^a-z0-9]+/g, ' ') // remaining punctuation -> space
 		.replace(/\b(?:only )?in (?:theaters|theatres|cinemas)\b.*$/, '') // release clause
 		.trim();

@@ -160,6 +160,23 @@ describe('normalizeTitle', () => {
 		expect(normalizeTitle('Dune - Official Trailer 2'))
 			.not.toBe(normalizeTitle('Dune - Official Trailer'));
 	});
+
+	it('drops a parenthesised studio credit', () => {
+		expect(normalizeTitle('VIOLENT NIGHT 2 | Official Trailer (Universal Pictures) - HD'))
+			.toBe(normalizeTitle('Violent Night 2 | Official Trailer'));
+	});
+
+	it('keeps parenthesised text that is not a studio name', () => {
+		expect(normalizeTitle('RAMAYANA - Official Trailer (English)'))
+			.not.toBe(normalizeTitle('RAMAYANA - Official Trailer (Hindi)'));
+	});
+
+	it('does not strip a studio name that is part of the film title', () => {
+		// 'Star Wars' is a channel name, but only an exact parenthesised match
+		// is removed, so these stay distinct films
+		expect(normalizeTitle('LEGO Star Wars | Official Trailer'))
+			.not.toBe(normalizeTitle('LEGO | Official Trailer'));
+	});
 });
 
 describe('sortByDate', () => {
