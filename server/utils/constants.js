@@ -47,8 +47,15 @@ export const TRAILER_CONFIG = {
 		'teaser trailer',
 		'teaser',
 		'red band',
+		// Streaming series posted by channels we keep for their theatrical output
+		'disney+',
+		'marvel television',
 	],
 	DAYS_RANGE: 30, // Lookback window
+	// Studios re-upload back-catalogue trailers, which pass the date window
+	// because the *upload* is recent. Reject a parenthesised release year older
+	// than this many years back, so "(1989)" goes and "(2026)" stays.
+	MAX_RELEASE_YEAR_AGE: 1,
 	PER_PAGE: 20, // Trailers per page in the UI
 	MAX_RESULTS: 50, // Videos requested per channel (YouTube API max)
 };

@@ -4,6 +4,7 @@ import {
 	normalizeTitle,
 	sortByDate,
 	deduplicateTrailers,
+	hasOutdatedReleaseYear,
 } from '../filterTrailers.js';
 
 // Builds a YouTube playlistItems-shaped response
@@ -60,6 +61,31 @@ describe('getTrailersOnly', () => {
 		expect(getTrailersOnly(response, 'Lionsgate Movies')).toHaveLength(0);
 	});
 
+	it('rejects streaming series from channels kept for their film output', () => {
+		const response = makeResponse([
+			{ title: 'Marvel Television’s VisionQuest | Official Trailer', publishedAt: daysAgo(1) },
+			{ title: 'LEGO Star Wars | Official Trailer | September 2 on Disney+', publishedAt: daysAgo(1) },
+		]);
+		expect(getTrailersOnly(response, 'Marvel Entertainment')).toHaveLength(0);
+	});
+
+	it('rejects back-catalogue re-uploads', () => {
+		const response = makeResponse([
+			{ title: 'Kickboxer 2 (1989) Official Trailer', publishedAt: daysAgo(1) },
+			{ title: 'Sorority Row (2009) Official Trailer', publishedAt: daysAgo(1) },
+		]);
+		expect(getTrailersOnly(response, 'Lionsgate Movies')).toHaveLength(0);
+	});
+
+	it('keeps current releases that carry a year in the title', () => {
+		const thisYear = new Date().getFullYear();
+		const response = makeResponse([
+			{ title: `Beware Boiúna (${thisYear}) Official Trailer`, publishedAt: daysAgo(1) },
+			{ title: `Heart of the Beast | Official Trailer 2 (${thisYear} Movie)`, publishedAt: daysAgo(1) },
+		]);
+		expect(getTrailersOnly(response, 'Paramount Pictures')).toHaveLength(2);
+	});
+
 	it('rejects videos outside the date window', () => {
 		const response = makeResponse([
 			{ title: 'Old News - Official Trailer', publishedAt: daysAgo(45) },
@@ -84,6 +110,33 @@ describe('getTrailersOnly', () => {
 	it('skips malformed items without throwing', () => {
 		const response = { items: [{ snippet: { title: 'No date - Official Trailer' } }, null] };
 		expect(getTrailersOnly(response, 'A24')).toEqual([]);
+	});
+});
+
+describe('hasOutdatedReleaseYear', () => {
+	it('flags a year older than the cutoff', () => {
+		expect(hasOutdatedReleaseYear('Kickboxer 2 (1989) Official Trailer', 2025)).toBe(true);
+		expect(hasOutdatedReleaseYear('THE PRODIGY (2019) | Official Trailer', 2025)).toBe(true);
+	});
+
+	it('allows the cutoff year and newer', () => {
+		expect(hasOutdatedReleaseYear('Some Film (2025) Official Trailer', 2025)).toBe(false);
+		expect(hasOutdatedReleaseYear('Some Film (2026) Official Trailer', 2025)).toBe(false);
+	});
+
+	it('reads a year followed by other words', () => {
+		expect(hasOutdatedReleaseYear('Heart of the Beast (2001 Movie)', 2025)).toBe(true);
+		expect(hasOutdatedReleaseYear('Heart of the Beast (2026 Movie)', 2025)).toBe(false);
+	});
+
+	it('ignores parenthesised text that is not a year', () => {
+		expect(hasOutdatedReleaseYear('INSIDIOUS - Final Trailer (4K)', 2025)).toBe(false);
+		expect(hasOutdatedReleaseYear('Some Film (HD)', 2025)).toBe(false);
+	});
+
+	it('handles missing titles', () => {
+		expect(hasOutdatedReleaseYear('', 2025)).toBe(false);
+		expect(hasOutdatedReleaseYear(null, 2025)).toBe(false);
 	});
 });
 

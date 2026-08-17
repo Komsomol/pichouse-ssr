@@ -27,6 +27,22 @@ const containsExcludedKeyword = title =>
 	TRAILER_CONFIG.EXCLUDED_KEYWORDS.some(keyword => title.includes(keyword));
 
 /**
+ * Detects a back-catalogue re-upload from a parenthesised release year.
+ *
+ * Studios periodically re-post trailers for old films ("Kickboxer 2 (1989)"),
+ * which clear the date window because the upload is recent even though the film
+ * is decades old. Matches "(1989)" and "(2026 Movie)" alike; a non-year group
+ * such as "(4K)" is ignored.
+ *
+ * @param {string} title - Video title (any case)
+ * @param {number} minYear - Oldest release year still considered current
+ * @returns {boolean} True if the title names an older release year
+ */
+export const hasOutdatedReleaseYear = (title, minYear) =>
+	[...String(title || '').matchAll(/\(((?:19|20)\d{2})\b[^)]*\)/g)]
+		.some(match => Number(match[1]) < minYear);
+
+/**
  * Formats a date for display, e.g. "Friday, 15 August 2026".
  * Fixed to UTC so the output does not shift with the build machine's timezone.
  * @param {Date} date - Date to format
@@ -80,6 +96,7 @@ export const getTrailersOnly = (
 	// Calculate the window once rather than per video
 	const now = Date.now();
 	const cutoff = now - daysRange * 24 * 60 * 60 * 1000;
+	const minYear = new Date(now).getFullYear() - TRAILER_CONFIG.MAX_RELEASE_YEAR_AGE;
 
 	return response.items.reduce((trailers, item) => {
 		if (!item?.snippet?.title || !item.snippet.publishedAt) {
@@ -88,8 +105,13 @@ export const getTrailersOnly = (
 
 		const title = item.snippet.title.toLowerCase();
 
-		// Early exits: must match a search keyword and no excluded keyword
-		if (!matchesSearchKeywords(title) || containsExcludedKeyword(title)) {
+		// Early exits: must match a search keyword, carry no excluded keyword,
+		// and not be a re-upload of an older film
+		if (
+			!matchesSearchKeywords(title)
+			|| containsExcludedKeyword(title)
+			|| hasOutdatedReleaseYear(title, minYear)
+		) {
 			return trailers;
 		}
 
