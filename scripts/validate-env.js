@@ -97,6 +97,12 @@ function validateEnvironment() {
 		warnings.push('CINEMA_ID not set, will use default: 029 (Finsbury Park)');
 	}
 
+	// Optional on purpose: without it the site still builds, the Trailers tab
+	// just renders empty rather than failing the whole generate step.
+	if (!process.env.YT_API_KEY) {
+		warnings.push('YT_API_KEY not set, the Trailers tab will be empty');
+	}
+
 	// Display warnings
 	if (warnings.length > 0) {
 		log('\n⚠️  Warnings:', 'yellow');

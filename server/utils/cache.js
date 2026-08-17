@@ -47,3 +47,6 @@ export const tmdbCache = new SimpleCache(360);
 
 // Picturehouse data changes daily, cache for 1 hour
 export const picturehouseCache = new SimpleCache(60);
+
+// YouTube studio uploads change a few times a day, cache for 1 hour
+export const youtubeCache = new SimpleCache(60);

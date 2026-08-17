@@ -1,9 +1,10 @@
 <template>
 	<div>
+		<NavTabs />
 		<NuxtPage />
 	</div>
 </template>
 
 <script setup>
-// Nothing special is needed here
+import NavTabs from '~/components/NavTabs.vue';
 </script>

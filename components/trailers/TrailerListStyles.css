@@ -1,0 +1,214 @@
+/* =============================================================================
+   STUDIO TRAILERS
+   Uses the design tokens defined in MovieListStyles.css
+   ============================================================================= */
+
+/* Studio filter */
+.trailer-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.trailer-filter label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.trailer-filter select {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  min-height: 44px;
+  width: 100%;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.trailer-filter select:hover {
+  border-color: var(--accent);
+}
+
+.trailer-filter select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Grid - single column on mobile */
+.trailer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+/* [8] Trailer Card - matches the movie card treatment */
+.trailer-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px var(--shadow-light);
+  overflow: hidden;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.trailer-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px var(--shadow-accent);
+}
+
+.trailer-card:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--shadow-accent);
+}
+
+/* Thumbnail doubles as the play button */
+.trailer-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: none;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.trailer-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-base);
+}
+
+.trailer-thumb:hover img {
+  transform: scale(1.03);
+}
+
+.trailer-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* [6] Play affordance */
+.trailer-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: var(--font-lg);
+  line-height: 1;
+  padding-left: 4px; /* optically centre the triangle */
+  box-shadow: 0 2px 12px var(--shadow-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.trailer-thumb:hover .trailer-play {
+  background: var(--accent-hover);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+/* Card text */
+.trailer-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+
+/* [4] Trailer Title - DM Serif Display, like movie titles */
+.trailer-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: var(--font-md);
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* [5] Studio name - muted, medium weight */
+.trailer-studio {
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.trailer-also {
+  font-weight: 400;
+  color: var(--text-subtle);
+}
+
+.trailer-date {
+  margin: 0;
+  font-size: var(--font-xs);
+  color: var(--text-subtle);
+}
+
+.trailer-empty {
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+/* =============================================================================
+   TABLET (600px+)
+   ============================================================================= */
+@media (min-width: 600px) {
+  .trailer-filter {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .trailer-filter select {
+    width: auto;
+    min-width: 260px;
+  }
+
+  .trailer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+}
+
+/* =============================================================================
+   LAPTOP (900px+)
+   ============================================================================= */
+@media (min-width: 900px) {
+  .trailer-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =============================================================================
+   REDUCED MOTION
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .trailer-thumb:hover img,
+  .trailer-thumb:hover .trailer-play {
+    transform: none;
+  }
+
+  .trailer-thumb:hover .trailer-play {
+    transform: translate(-50%, -50%);
+  }
+}

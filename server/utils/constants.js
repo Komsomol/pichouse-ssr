@@ -31,4 +31,24 @@ export const SCREENING_CONFIG = {
 // Performance configuration
 export const PERFORMANCE_CONFIG = {
 	MAX_CONCURRENT_TMDB_REQUESTS: 5,
+	MAX_CONCURRENT_YOUTUBE_REQUESTS: 8,
+};
+
+// Studio trailers configuration (ported from the Movie-Trailers project)
+export const TRAILER_CONFIG = {
+	// A title must contain one of these to count as a trailer
+	SEARCH_KEYWORDS: ['official trailer', 'final trailer'],
+	// ...and none of these, which mark content we don't want
+	EXCLUDED_KEYWORDS: [
+		'blu-ray',
+		'season',
+		'episode',
+		'marvel comics',
+		'teaser trailer',
+		'teaser',
+		'red band',
+	],
+	DAYS_RANGE: 30, // Lookback window
+	PER_PAGE: 20, // Trailers per page in the UI
+	MAX_RESULTS: 50, // Videos requested per channel (YouTube API max)
 };

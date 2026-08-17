@@ -179,6 +179,7 @@ jobs:
           TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
           OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
           COOKIE: ${{ secrets.COOKIE }}
+          YT_API_KEY: ${{ secrets.YT_API_KEY }}
         run: npm run generate
 
       - name: 📊 Build summary
