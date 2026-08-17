@@ -150,10 +150,15 @@ export const getTrailersOnly = (
  * 18"). Any sequel marker sits before that clause, so "Official Trailer 2"
  * stays distinct from "Official Trailer" - digits are otherwise preserved.
  *
- * Finally it drops a parenthesised studio credit, which a regional channel adds
- * to say whose film it is ("Violent Night 2 | Official Trailer (Universal
- * Pictures)" from Universal UK vs "Violent Night 2 | Official Trailer" from
- * Universal Pictures itself).
+ * Finally it drops a studio credit, which a channel adds to say whose film it
+ * is. That appears two ways - parenthesised ("Violent Night 2 | Official
+ * Trailer (Universal Pictures)" from Universal UK) or as a trailing
+ * pipe-delimited segment ("Primetime | Official Trailer | A24") - and both are
+ * removed so the credited and uncredited uploads collapse to one key.
+ *
+ * Only an exact match against a known channel name is stripped. Several channel
+ * names ('Star Wars', 'Disney', 'Legendary') also occur inside genuine film
+ * titles, so removing them wherever they appear would merge unrelated trailers.
  *
  * @param {string} title - Raw video title
  * @returns {string} Normalized comparison key
@@ -165,7 +170,9 @@ export const normalizeTitle = title =>
 		.replace(/[–—]/g, '-') // en/em dash -> hyphen
 		.replace(/\b(?:4k|uhd|hd|60fps|dolby vision)\b/g, '') // quality tags
 		.replace(/\(([^)]+)\)/g, (match, inner) =>
-			STUDIO_NAMES.has(inner.trim()) ? ' ' : match) // studio credit
+			STUDIO_NAMES.has(inner.trim()) ? ' ' : match) // parenthesised credit
+		.replace(/\|([^|]*)$/, (match, segment) =>
+			STUDIO_NAMES.has(segment.trim()) ? '' : match) // trailing credit
 		.replace(/[^a-z0-9]+/g, ' ') // remaining punctuation -> space
 		.replace(/\b(?:only )?in (?:theaters|theatres|cinemas)\b.*$/, '') // release clause
 		.trim();

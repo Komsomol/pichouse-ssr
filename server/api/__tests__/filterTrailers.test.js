@@ -166,6 +166,24 @@ describe('normalizeTitle', () => {
 			.toBe(normalizeTitle('Violent Night 2 | Official Trailer'));
 	});
 
+	it('drops a trailing pipe-delimited studio credit', () => {
+		expect(normalizeTitle('Primetime | Official Trailer HD | A24'))
+			.toBe(normalizeTitle('Primetime | Official Trailer'));
+		expect(normalizeTitle('Last Seen — Official Trailer | Apple TV'))
+			.toBe(normalizeTitle('Last Seen - Official Trailer'));
+	});
+
+	it('keeps a trailing segment that is not a studio name', () => {
+		expect(normalizeTitle('LEGO Star Wars | Official Trailer | September 2'))
+			.not.toBe(normalizeTitle('LEGO Star Wars | Official Trailer'));
+	});
+
+	it('only strips the studio credit when it is the final segment', () => {
+		// 'A24' here names the film, not the uploader
+		expect(normalizeTitle('A24 | Official Trailer'))
+			.not.toBe(normalizeTitle('Official Trailer'));
+	});
+
 	it('keeps parenthesised text that is not a studio name', () => {
 		expect(normalizeTitle('RAMAYANA - Official Trailer (English)'))
 			.not.toBe(normalizeTitle('RAMAYANA - Official Trailer (Hindi)'));

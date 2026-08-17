@@ -143,6 +143,17 @@ import { ref } from 'vue';
 import useTrailerList from '~/components/trailers/TrailerListScript.js';
 import VideoModal from '~/components/movies/VideoModal.vue';
 
+useHead({
+	title: 'Studio Trailers - PicHouse',
+	meta: [
+		{
+			name: 'description',
+			content:
+				'Official trailers released by film studios in the last 30 days, filterable by studio.',
+		},
+	],
+});
+
 const {
 	trailers,
 	pending,

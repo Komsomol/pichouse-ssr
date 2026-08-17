@@ -1,5 +1,7 @@
 <template>
 	<div class="container">
+		<h1>Screen 1</h1>
+
 		<!-- Pagination Controls at the top (only show if more than 10 movies) -->
 		<div
 			v-if="paginatedMovies.length && movies && movies.length > 10"
@@ -176,6 +178,17 @@
 import { ref } from 'vue';
 import useMovieList from '~/components/movies/MovieListScript.js'; // Adjust the import path accordingly
 import VideoModal from '~/components/movies/VideoModal.vue'; // Import the modal component
+
+useHead({
+	title: 'Screen 1 - PicHouse',
+	meta: [
+		{
+			name: 'description',
+			content:
+				'Screen 1 showtimes at Picturehouse Finsbury Park and Picturehouse Central, with booking links.',
+		},
+	],
+});
 
 // Destructure values returned by useMovieList
 const {
