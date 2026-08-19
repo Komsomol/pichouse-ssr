@@ -54,6 +54,46 @@ describe('filterTrailerVideos', () => {
 		expect(filterTrailerVideos(videos)[0].name).toBe('Official Trailer');
 	});
 
+	it('ranks a countdown promo below the main trailer', () => {
+		// The Odyssey: the countdown is the newest thing it has
+		const videos = [
+			video({ name: 'Official Countdown Trailer', published_at: '2026-07-01T00:00:00.000Z' }),
+			video({ name: 'Official New Trailer', published_at: '2026-05-05T00:00:00.000Z' }),
+			video({ name: 'Official Trailer', published_at: '2025-12-22T00:00:00.000Z' }),
+		];
+		expect(filterTrailerVideos(videos)[0].name).toBe('Official New Trailer');
+	});
+
+	it('ranks a regional cut below the main trailer', () => {
+		const videos = [
+			video({ name: 'Official US Trailer', published_at: '2026-08-11T00:00:00.000Z' }),
+			video({ name: 'Official Trailer', published_at: '2026-05-05T00:00:00.000Z' }),
+		];
+		expect(filterTrailerVideos(videos)[0].name).toBe('Official Trailer');
+	});
+
+	it('does not treat a lowercase "us" as a regional marker', () => {
+		const videos = [
+			video({ name: 'Trailer - Bring us home', published_at: '2026-08-11T00:00:00.000Z' }),
+			video({ name: 'Official Trailer', published_at: '2026-05-05T00:00:00.000Z' }),
+		];
+		expect(filterTrailerVideos(videos)[0].name).toBe('Trailer - Bring us home');
+	});
+
+	it('lands on the final trailer without naming it a special case', () => {
+		// A final trailer always postdates the official trailer it follows
+		const videos = [
+			video({ name: 'Official Trailer', published_at: '2026-02-19T00:00:00.000Z' }),
+			video({ name: 'Final Trailer', published_at: '2026-05-26T00:00:00.000Z' }),
+		];
+		expect(filterTrailerVideos(videos)[0].name).toBe('Final Trailer');
+	});
+
+	it('still returns a promo cut when it is all a film has', () => {
+		const videos = [video({ name: 'Official Countdown Trailer' })];
+		expect(filterTrailerVideos(videos)).toHaveLength(1);
+	});
+
 	it('falls back to a name match when nothing is typed as a trailer', () => {
 		// Keeps a film that only ever had a teaser rather than dropping it
 		const videos = [

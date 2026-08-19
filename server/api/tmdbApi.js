@@ -35,12 +35,33 @@ const namesATrailer = video => /\btrailers?\b/i.test(video?.name || '');
 const newestFirst = (a, b) =>
 	new Date(b.published_at || 0) - new Date(a.published_at || 0);
 
-// Among correctly typed trailers, one that calls itself a trailer outranks one
-// that does not, and only then does the newer win. Studios type their ticket
-// and countdown spots as Trailer too, and those are the newest thing a film
-// has by the time it charts.
-const bestFirst = (a, b) =>
-	Number(namesATrailer(b)) - Number(namesATrailer(a)) || newestFirst(a, b);
+// Qualifiers marking a promo cut rather than the main trailer: a countdown to
+// release, a teaser, a vertical edit for social, a format or regional variant.
+const PROMO_QUALIFIER = /\b(?:countdown|teaser|tickets?|vertical|sing[-\s]?along|imax|4dx|dolby|re[-\s]?release|international|tv\s?spot|spot)\b/i;
+
+// Country codes only count uppercase - "Official US Trailer" is a regional cut,
+// but a lowercase "us" is an ordinary word in a title
+const REGIONAL_QUALIFIER = /\b(?:US|UK|AU|NZ)\b/;
+
+/**
+ * Ranks a trailer: 0 is the main trailer, 2 is barely a trailer at all.
+ * @param {object} video - TMDb video
+ * @returns {number} Sort rank, lower is better
+ */
+const trailerRank = (video) => {
+	const name = video?.name || '';
+
+	// Does not even call itself a trailer ("Tickets now on sale")
+	if (!namesATrailer(video)) return 2;
+
+	// A promo cut of the trailer, not the trailer
+	return PROMO_QUALIFIER.test(name) || REGIONAL_QUALIFIER.test(name) ? 1 : 0;
+};
+
+// Rank first, date second. Within the main trailers the newest is the one a
+// film ends on - a "Final Trailer" always postdates the "Official Trailer" it
+// follows - so this lands on the final cut without naming it as a special case.
+const bestFirst = (a, b) => trailerRank(a) - trailerRank(b) || newestFirst(a, b);
 
 /**
  * Picks a film's trailers out of its TMDb videos, best first.
@@ -51,8 +72,11 @@ const bestFirst = (a, b) =>
  * experienced the new trailer?" that a name match ranked above the film's
  * actual "Official Trailer".
  *
- * Official uploads win over fan submissions, and newer wins over older, so a
- * caller taking the first entry gets the current official trailer.
+ * Official uploads win over fan submissions. Among those, a promo cut - a
+ * countdown, a regional or vertical edit - is ranked below the main trailer,
+ * because it is the newest thing a film has once it charts and date alone
+ * surfaced it over the trailer people mean. Newest wins within a rank, which
+ * lands on the "Final Trailer" wherever a film released one.
  *
  * Where TMDb types nothing as a Trailer the old name match still runs, so a
  * film that only ever had a teaser keeps a video rather than losing one.
