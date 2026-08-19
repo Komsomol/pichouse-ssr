@@ -2,10 +2,11 @@
 
 ## Overview
 
-Nuxt 3 static site with three tabs:
+Nuxt 3 static site with four tabs:
 
 - **Cinema** (`/`) - movies on **Screen 1** at Finsbury Park and Picturehouse Central, filtered to **weekday evenings (after 6 PM)** and **all weekend times**, with booking links and trailers.
 - **Trailers** (`/trailers`) - official studio trailers from YouTube, last 30 days, filterable by studio.
+- **Box Office** (`/boxoffice`) - the UK weekend top 10 scraped from Box Office Mojo, enriched with TMDb metadata and trailers.
 - **About** (`/about`) - what the site is, how it updates, data sources and attribution.
 
 **Live URL:** https://pichouse-ssr.pages.dev
@@ -17,11 +18,11 @@ Nuxt 3 static site with three tabs:
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (daily check at 6 AM UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (96 tests)
+- **Testing:** Vitest + happy-dom (116 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
-- **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3
+- **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Concurrency:** p-limit (5 TMDb, 8 YouTube)
-- **Caching:** In-memory TTL (6hr TMDb, 1hr Picturehouse, 1hr YouTube)
+- **Caching:** In-memory TTL (6hr TMDb, 1hr Picturehouse, 1hr YouTube, 6hr box office)
 
 ## Architecture
 
@@ -48,6 +49,11 @@ GitHub Actions (smart-deploy, daily 6 AM UTC)
     │     ├── Filter: keyword, 30-day window, release-year, excluded terms
     │     └── Sort newest first, dedupe co-releases into `alsoFrom`
     │
+    ├── /server/api/boxoffice.js
+    │     ├── Box Office Mojo year index → latest weekend → chart [cached 6hr]
+    │     └── Enrich top 10 with TMDb [cached 6hr, 5 concurrent]
+    │           poster, synopsis, runtime, rating and trailer per film
+    │
     ▼
 Static HTML → Cloudflare Pages CDN → https://pichouse-ssr.pages.dev
 ```
@@ -66,16 +72,20 @@ Static HTML → Cloudflare Pages CDN → https://pichouse-ssr.pages.dev
 | `/server/api/trailers.js` | Studio trailers orchestrator |
 | `/server/api/youtubeApi.js` | YouTube Data API v3 client |
 | `/server/api/filterTrailers.js` | Trailer filtering, sorting, dedup |
-| `/server/utils/constants.js` | Cinema IDs, screen config, trailer config |
+| `/server/api/boxoffice.js` | UK box office top 10 orchestrator |
+| `/server/api/boxOfficeApi.js` | Box Office Mojo client (two-step: year index → chart) |
+| `/server/api/filterBoxOffice.js` | Chart parsing (cheerio) |
+| `/server/utils/constants.js` | Cinema IDs, screen config, trailer + box office config |
 | `/server/utils/channels.js` | 50 studio YouTube channels |
 | `/server/utils/helpers.js` | Pure utility functions |
 | `/server/utils/cache.js` | TTL-based caches |
 | `/pages/index.vue` | Cinema tab |
 | `/pages/trailers.vue` | Trailers tab |
+| `/pages/boxoffice.vue` | Box Office tab |
 | `/pages/about.vue` | About tab |
 | `/components/NavTabs.vue` | Tab bar (rendered from `app.vue`) |
 | `/components/movies/MovieListStyles.css` | Design tokens + shared layout for all pages |
-| `/components/movies/VideoModal.vue` | Trailer modal (shared by both tabs) |
+| `/components/movies/VideoModal.vue` | Trailer modal (shared by Cinema, Trailers and Box Office) |
 | `/.github/workflows/deploy.yml` | Push + manual deploy (no cron) |
 | `/.github/workflows/smart-deploy.yml` | Daily deploy, skips when data unchanged |
 
@@ -93,6 +103,12 @@ TRAILER_CONFIG: {
   MAX_RELEASE_YEAR_AGE: 1,  // rejects back-catalogue re-uploads by title year
   PER_PAGE: 20
 }
+BOX_OFFICE_CONFIG: {
+  BASE_URL: 'https://www.boxofficemojo.com',
+  YEAR_INDEX_PATH: '/weekend/by-year/?area=GB',  // newest weekend first
+  TOP_N: 10,
+  CURRENCY: 'USD'  // Mojo reports British grosses in dollars
+}
 ```
 
 ## Environment Variables
@@ -105,7 +121,9 @@ YT_API_KEY=your_key        # Optional - powers the Trailers tab
 ```
 
 Only `TMDB_TOKEN` and `COOKIE` are enforced by `scripts/validate-env.js`. Without
-`YT_API_KEY` the build still succeeds and the Trailers tab renders empty.
+`YT_API_KEY` the build still succeeds and the Trailers tab renders empty. The Box
+Office tab needs no key of its own - the chart is scraped and the rest comes from
+`TMDB_TOKEN`.
 
 GitHub Secrets additionally need `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
 (6 secrets total).
@@ -139,6 +157,7 @@ took the site down 16 Jun - 7 Jul 2026).
 Test files:
 - `server/api/__tests__/filterMovies.test.js`
 - `server/api/__tests__/filterTrailers.test.js`
+- `server/api/__tests__/filterBoxOffice.test.js`
 - `server/utils/__tests__/cache.test.js`
 - `server/utils/__tests__/helpers.test.js`
 - `server/utils/__tests__/env-validation.test.js`
@@ -161,10 +180,12 @@ Test files:
 6. **Use cleaned titles for API search** - `cleanTitleForSearch()`
 7. **No filter UI on the Cinema tab** - intentionally omitted. The Trailers tab's
    studio filter is deliberate and separate; do not "unify" them.
-8. **Don't add Pinia** - state is component-local
-9. **Don't migrate off Nuxt** - server routes are what keep API keys out of the client
-10. **Verify dependency changes with `npm ci`, not `npm install`** - see gotchas
-11. **Tests and ESLint must pass**
+8. **Box office enrichment goes through TMDb** - it matched 9/9 of the chart
+   with a real trailer where OMDB carries no trailer data at all
+9. **Don't add Pinia** - state is component-local
+10. **Don't migrate off Nuxt** - server routes are what keep API keys out of the client
+11. **Verify dependency changes with `npm ci`, not `npm install`** - see gotchas
+12. **Tests and ESLint must pass**
 
 ## Gotchas
 
@@ -178,7 +199,11 @@ Test files:
 - **Cloudflare edge can serve a stale HTML shell for a minute after deploy.**
   Add a cache-busting query before concluding a deploy failed.
 - **The smart-deploy fingerprint only covers Picturehouse data.** New studio
-  trailers alone will not trigger a rebuild.
+  trailers, and a new box office weekend, will not trigger a rebuild on their own.
+- **Box Office Mojo has no "latest weekend" URL.** A build reads the year index
+  and follows the first row, so the chart lags the weekend by however long Mojo
+  takes to publish. `britinfo.net`, which `uk_top_10_scraper` used, has not
+  updated since 4 September 2025 - do not switch back to it.
 
 ## Known Limitations
 
@@ -195,6 +220,8 @@ Test files:
 - **Trailer dedup misses pipe-delimited studio suffixes.** `normalizeTitle` strips
   a parenthesised studio credit (`(Universal Pictures)`) but not a trailing
   `| A24`. No current feed entry hits this.
-- **Cinema tab has no `<h1>`** - the other two pages do.
+- **`fetchVideosAndPosterFromTMDb` returns `runtime` and `voteAverage`** as well
+  as videos and poster. They come off the details call the poster already needs,
+  so the Box Office tab's metadata costs no extra request.
 - `README.md` and `DEPLOYMENT.md` were brought current on 17 Aug 2026; keep them
   in step when changing workflows, env vars or Node version.

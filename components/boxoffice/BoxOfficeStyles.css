@@ -1,0 +1,195 @@
+/* =============================================================================
+   UK BOX OFFICE TOP 10
+   Builds on the design system in MovieListStyles.css
+   ============================================================================= */
+
+/* Source and currency note under the page title */
+.boxoffice-note {
+  margin: calc(var(--space-lg) * -1 + var(--space-xs)) 0 var(--space-lg);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.boxoffice-note a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.boxoffice-note a:hover {
+  text-decoration: underline;
+}
+
+.boxoffice-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* [8] Chart Card - matches the movie and trailer card treatment */
+.boxoffice-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'rank poster'
+    'body body';
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px var(--shadow-light);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.boxoffice-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px var(--shadow-accent);
+}
+
+.boxoffice-card:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--shadow-accent);
+}
+
+.boxoffice-rank {
+  grid-area: rank;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: var(--font-3xl);
+  line-height: 1;
+  color: var(--accent);
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* Fixed width and ratio so the column is reserved before the poster loads,
+   rather than the copy reflowing as each image arrives */
+.boxoffice-poster {
+  grid-area: poster;
+  width: 120px;
+  aspect-ratio: 2 / 3;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.boxoffice-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.boxoffice-body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.boxoffice-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: var(--font-xl);
+  font-weight: 400;
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.boxoffice-meta {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+/* Weekend and running totals */
+.boxoffice-grosses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin: 0;
+  padding: var(--space-sm) 0 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.boxoffice-gross {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.boxoffice-gross dt {
+  font-size: var(--font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-subtle);
+}
+
+.boxoffice-gross dd {
+  margin: 0;
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.boxoffice-plot {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+/* Trailer link, styled like the Cinema tab's video links */
+.boxoffice-trailer {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.boxoffice-trailer:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
+}
+
+.boxoffice-trailer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.boxoffice-empty {
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* =============================================================================
+   TABLET (600px+) - poster and copy sit side by side
+   ============================================================================= */
+@media (min-width: 600px) {
+  .boxoffice-card {
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas: 'rank poster body';
+    align-items: start;
+    gap: var(--space-lg);
+  }
+
+  .boxoffice-poster {
+    width: 140px;
+  }
+
+  .boxoffice-grosses {
+    gap: var(--space-xl);
+  }
+}

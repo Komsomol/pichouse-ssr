@@ -2,6 +2,8 @@
  * Movie filtering and sanitization utilities
  */
 
+import { normalizeTitleKey } from '../utils/helpers.js';
+
 /**
  * Cleans movie title for API searches (TMDb, OMDB)
  * Removes Picturehouse-specific screening indicators that won't match in movie databases
@@ -64,12 +66,13 @@ export const cleanTitleForSearch = (title) => {
 		/^NT Live:\s*/i,
 		/^EXHIBITION ON SCREEN:\s*/i,
 
-		// Event add-ons
-		/\s*\+\s*Q&A$/i,
-		/\s*\+\s*Live Intro.*$/i,
-		/\s*\+\s*Mulled Wine.*$/i,
-		/\s*\+\s*Prosecco.*$/i,
-		/\s*\+\s*PJ Party$/i,
+		// Event add-ons. Picturehouse writes what comes with the screening after
+		// a "+", so everything from there on is not part of the film's name:
+		// "Pressure + Q&A", "Pressure + Live Broadcast Q&A", "Paddington + PJ
+		// Party". Enumerating the add-ons missed each new wording, so the whole
+		// trailing clause goes. A title that is only a "+" clause survives via
+		// the empty-result fallback at the end of this function.
+		/\s*\+.*$/s,
 
 		// Year in parentheses (keep for context but try without if no match)
 		// /\s*\(\d{4}\)$/,
@@ -86,6 +89,78 @@ export const cleanTitleForSearch = (title) => {
 	cleaned = cleaned.replace(/\s*[-:]\s*$/, '').trim();
 
 	return cleaned || title; // Fall back to original if cleaning empties it
+};
+
+/**
+ * Strips a season or strand prefix, leaving the film's own name.
+ *
+ * Picturehouse files a screening under the season running it: "Out at Clapham:
+ * Beautiful Thing", "Green Screen: Burning Skies", "American Library presents
+ * Pressure". The prefix is not part of the film's name and TMDb finds nothing
+ * with it attached.
+ *
+ * There is no syntactic difference between a strand prefix and a real title's
+ * colon - "Green Screen: Burning Skies" and "Wicked: For Good" are the same
+ * shape - so this must not be applied blindly. It is a *retry*: the caller
+ * searches the full title first and only falls back to this when TMDb returns
+ * nothing, which a genuine title never does.
+ *
+ * Splitting on the FIRST colon keeps a nested title intact: "CFS: Pompei:
+ * Below the Clouds" leaves "Pompei: Below the Clouds".
+ *
+ * @param {string} title - Cleaned title
+ * @returns {string} The name without its prefix, or '' if there is no prefix
+ */
+export const stripStrandPrefix = (title) => {
+	const text = String(title || '').trim();
+
+	// A leading colon segment: "Kung Fu Cinema: Snake in the Monkey's Shadow"
+	const colonIndex = text.indexOf(':');
+	if (colonIndex > 0) {
+		return text.slice(colonIndex + 1).trim();
+	}
+
+	// No colon, but a presenter still names itself: "LMF presents Ish"
+	const presents = text.match(/\bpresents?\b\s*/i);
+	if (presents && presents.index > 0) {
+		return text.slice(presents.index + presents[0].length).trim();
+	}
+
+	return '';
+};
+
+/**
+ * Keeps only the TMDb results that are actually called `query`.
+ *
+ * TMDb's search is fuzzy and its first result is often a longer film that
+ * merely contains the words: searching "Resurrection" leads with "Alien
+ * Resurrection". Taking that blindly puts the wrong poster and trailer on a
+ * screening, so a title recovered by stripping a strand prefix is only accepted
+ * when a result carries that exact name.
+ *
+ * Both names are compared. A foreign film is listed under its English `title`
+ * and its native `original_title`, and a UK listing may use either - "Snake in
+ * the Monkey's Shadow" is the English title of "猴形扣手", while "Diamanti" is
+ * the original of "Diamonds".
+ *
+ * Every match is returned rather than just the first, so the caller's existing
+ * choice between them (latest release, or first) still applies - several films
+ * genuinely share a name.
+ *
+ * @param {string} query - Title searched for
+ * @param {Array} movies - TMDb search results
+ * @returns {Array} Results whose title or original_title equals the query
+ */
+export const filterByExactTitle = (query, movies) => {
+	const key = normalizeTitleKey(query);
+
+	if (!key || !Array.isArray(movies)) return [];
+
+	return movies.filter(
+		movie =>
+			normalizeTitleKey(movie?.title) === key
+			|| normalizeTitleKey(movie?.original_title) === key,
+	);
 };
 
 /**

@@ -13,6 +13,12 @@
 			Trailers
 		</NuxtLink>
 		<NuxtLink
+			to="/boxoffice"
+			class="nav-tab"
+		>
+			Box Office
+		</NuxtLink>
+		<NuxtLink
 			to="/about"
 			class="nav-tab"
 		>

@@ -32,6 +32,20 @@
 		</section>
 
 		<section class="about-section">
+			<h2>The Box Office tab</h2>
+			<p>
+				The ten highest grossing films at the UK box office over the most
+				recently published weekend, with each film's takings for that weekend
+				and its running total.
+			</p>
+			<p>
+				Figures come from Box Office Mojo, which reports British grosses in US
+				dollars. Everything else - the poster, synopsis, runtime, rating and
+				the trailer - comes from TMDb.
+			</p>
+		</section>
+
+		<section class="about-section">
 			<h2>How it stays current</h2>
 			<p>
 				There is no server. Every listing and trailer on this site is fetched
@@ -52,10 +66,13 @@
 				<dd>Showtimes, ratings, runtimes and booking links.</dd>
 
 				<dt>TMDb</dt>
-				<dd>Film posters, synopses and trailers.</dd>
+				<dd>Film posters, synopses, runtimes, ratings and trailers.</dd>
 
 				<dt>OMDb</dt>
 				<dd>Fallback trailer lookup when TMDb has none.</dd>
+
+				<dt>Box Office Mojo</dt>
+				<dd>The UK weekend top 10 and its gross figures.</dd>
 
 				<dt>YouTube</dt>
 				<dd>Studio channel uploads behind the Trailers tab.</dd>
@@ -90,7 +107,7 @@ useHead({
 		{
 			name: 'description',
 			content:
-				'Screen 1 showtimes for Picturehouse Finsbury Park and Central, plus official studio trailers from the last 30 days.',
+				'Screen 1 showtimes for Picturehouse Finsbury Park and Central, the UK box office top 10, plus official studio trailers from the last 30 days.',
 		},
 	],
 });

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { tmdbCache } from '../utils/cache.js';
-import { cleanTitleForSearch } from './filterMovies.js';
+import { cleanTitleForSearch, stripStrandPrefix, filterByExactTitle } from './filterMovies.js';
 
 const TMDB_TOKEN = process.env.TMDB_TOKEN;
 
@@ -46,16 +46,42 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
 		return cachedMovie;
 	}
 
-	const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(cleanedTitle)}`;
 	const headers = {
 		Authorization: `Bearer ${TMDB_TOKEN}`, // Use Bearer token for authorization
 	};
 
-	try {
+	const searchMovies = async (query) => {
+		const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}`;
 		const response = await axios.get(searchUrl, { headers });
-		const movies = response.data.results; // Get all movie results
+		return response.data.results || [];
+	};
 
-		if (!movies || movies.length === 0) {
+	try {
+		let movies = await searchMovies(cleanedTitle);
+
+		// Picturehouse files a screening under the season running it ("Out at
+		// Clapham: Beautiful Thing"), which TMDb cannot match. Retry once on the
+		// film's own name. A real title with a colon ("Wicked: For Good") matches
+		// first time and never reaches this, which is why the prefix is only ever
+		// dropped on a miss rather than up front.
+		//
+		// The retry's results are held to an exact name. Dropping a prefix leaves
+		// a short, common query, and TMDb answers those loosely - "Resurrection"
+		// leads with "Alien Resurrection". Without this the recovered screening
+		// would carry a confidently wrong poster and trailer, which is worse than
+		// the film not resolving at all.
+		if (movies.length === 0) {
+			const withoutPrefix = stripStrandPrefix(cleanedTitle);
+
+			if (withoutPrefix && withoutPrefix !== cleanedTitle) {
+				movies = filterByExactTitle(
+					withoutPrefix,
+					await searchMovies(withoutPrefix),
+				);
+			}
+		}
+
+		if (movies.length === 0) {
 			return null;
 		}
 
@@ -98,22 +124,31 @@ export const fetchVideosAndPosterFromTMDb = async (movieId) => {
 	};
 
 	try {
-		// Fetch videos and poster in parallel for better performance
-		const [videoResponse, movieDetails] = await Promise.all([
-			axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`, { headers }),
-			axios.get(`https://api.themoviedb.org/3/movie/${movieId}?language=en-US`, { headers }),
-		]);
+		// One request, not two: append_to_response returns the videos inside the
+		// details payload, so a film costs a single call instead of a details
+		// call plus a videos call
+		const { data } = await axios.get(
+			`https://api.themoviedb.org/3/movie/${movieId}?language=en-US&append_to_response=videos`,
+			{ headers },
+		);
 
 		// Use pure functions for data transformation
-		const trailerVideos = filterTrailerVideos(videoResponse.data.results);
-		const poster = createPosterUrl(movieDetails.data.poster_path);
+		const trailerVideos = filterTrailerVideos(data.videos?.results || []);
+		const poster = createPosterUrl(data.poster_path);
 
-		const result = { videos: trailerVideos, poster };
+		// Runtime and rating ride along on the details call the poster already
+		// needs, so the Box Office tab costs no extra request
+		const result = {
+			videos: trailerVideos,
+			poster,
+			runtime: data.runtime || null,
+			voteAverage: data.vote_average || null,
+		};
 		tmdbCache.set(cacheKey, result);
 		return result;
 	}
 	catch (error) {
 		console.error(`Error fetching videos and poster for movie ID ${movieId}:`, error);
-		return { videos: [], poster: null };
+		return { videos: [], poster: null, runtime: null, voteAverage: null };
 	}
 };

@@ -1,11 +1,10 @@
 // server/api/picturehouseApi.js
 import axios from 'axios';
-import dotenv from 'dotenv';
 import { picturehouseCache } from '../utils/cache.js';
 
-dotenv.config(); // Load environment variables
-
 // Configuration constants (pure data)
+// Nuxt loads .env before a server route runs, which is why the other API
+// clients here read process.env without loading anything themselves.
 const COOKIE = process.env.COOKIE;
 const CINEMA_ID = '029'; // Finsbury Park
 const API_BASE_URL = 'https://www.picturehouses.com';

@@ -4,7 +4,7 @@
 [![Deploy](https://img.shields.io/badge/Deploy-Cloudflare_Pages-orange?style=flat-square)](https://pichouse-ssr.pages.dev)
 [![Daily Build](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml/badge.svg)](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml)
 
-A statically generated site with two tabs: **Cinema**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, and **Trailers**, showing official trailers released by film studios in the last 30 days.
+A statically generated site with three listings tabs - **Cinema**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
 
 ### 🔗 **[View Live Site → pichouse-ssr.pages.dev](https://pichouse-ssr.pages.dev)**
 
@@ -25,7 +25,13 @@ A statically generated site with two tabs: **Cinema**, showing Screen 1 showtime
 - 🔀 **Co-release Merging** - One trailer posted by two studios collapses into a single card credited to both
 - 🚫 **Noise Filtering** - Excludes teasers, streaming-only series and back-catalogue re-uploads
 
-### Both
+### Box Office tab
+
+- 💷 **UK Weekend Top 10** - Ranked chart with weekend and running totals
+- 🎞️ **Trailers** - A playable TMDb trailer per film, falling back to a YouTube search link
+- ⭐ **Metadata** - Poster, synopsis, runtime and rating from TMDb
+
+### All three
 
 - 📱 **Mobile First** - Layout, showtime grid and tap targets tuned for phones
 - 🌗 **Light & Dark** - Follows the reader's system theme
@@ -36,8 +42,8 @@ A statically generated site with two tabs: **Cinema**, showing Screen 1 showtime
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
 - **CI/CD:** GitHub Actions (daily check at 6 AM UTC)
-- **Testing:** Vitest (98 tests)
-- **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3
+- **Testing:** Vitest (116 tests)
+- **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever
 reach the browser and the deployed site is plain static HTML.
@@ -150,12 +156,15 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 ```
 ├── .github/workflows/     # Daily (smart-deploy) and push (deploy) pipelines
 ├── components/
-│   ├── NavTabs.vue        # Cinema / Trailers tab bar
+│   ├── NavTabs.vue        # Cinema / Trailers / Box Office / About tab bar
 │   ├── movies/            # Movie list composable, styles, video modal
-│   └── trailers/          # Trailer list composable and styles
+│   ├── trailers/          # Trailer list composable and styles
+│   └── boxoffice/         # Box office list composable and styles
 ├── pages/
 │   ├── index.vue          # Cinema tab
-│   └── trailers.vue       # Trailers tab
+│   ├── trailers.vue       # Trailers tab
+│   ├── boxoffice.vue      # Box Office tab
+│   └── about.vue          # About tab
 ├── server/
 │   ├── api/
 │   │   ├── movies.js           # Cinema listings endpoint
@@ -165,9 +174,12 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 │   │   ├── filterMovies.js     # Title sanitising and cinema filtering
 │   │   ├── trailers.js         # Studio trailers endpoint
 │   │   ├── youtubeApi.js       # YouTube Data API v3
-│   │   └── filterTrailers.js   # Trailer filtering, sorting, dedup
+│   │   ├── filterTrailers.js   # Trailer filtering, sorting, dedup
+│   │   ├── boxoffice.js        # UK box office top 10 endpoint
+│   │   ├── boxOfficeApi.js     # Box Office Mojo scraper
+│   │   └── filterBoxOffice.js  # Chart parsing and trailer matching
 │   └── utils/
-│       ├── constants.js   # Cinema IDs, screening rules, trailer config
+│       ├── constants.js   # Cinema IDs, screening rules, trailer and box office config
 │       ├── channels.js    # Studio YouTube channels
 │       ├── helpers.js     # Showtime helpers
 │       └── cache.js       # In-memory TTL caches
@@ -209,11 +221,28 @@ Add or remove studios in `server/utils/channels.js`. Each entry needs a display
 name and a YouTube channel ID; the uploads playlist is derived from the ID, so no
 extra lookup is needed.
 
+### Box Office
+
+Edit `BOX_OFFICE_CONFIG` in `server/utils/constants.js`:
+
+- **TOP_N** - how many films to keep (10)
+- **YEAR_INDEX_PATH** - Box Office Mojo's British weekend index, read to find the
+  latest published chart
+
+Grosses are shown as Box Office Mojo reports them, in **US dollars**. The chart
+itself needs no API key; posters, synopses, runtimes, ratings and trailers come
+from TMDb via `TMDB_TOKEN`.
+
 ## Credits
 
 The Trailers tab is ported from the
 [Movie-Trailers](https://github.com/Komsomol/Movie-Trailers) project, adapted from
 its Express backend to build-time static generation.
+
+The Box Office tab is ported from the
+[uk_top_10_scraper](https://github.com/Komsomol/uk_top_10_scraper) project. Its
+source, britinfo.net, stopped publishing in September 2025, so the same two-step
+scrape now runs against Box Office Mojo's British weekend chart.
 
 ## License
 

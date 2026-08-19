@@ -7,7 +7,6 @@
 
 /* eslint-disable no-console */
 
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -16,7 +15,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..');
 
-dotenv.config({ path: join(projectRoot, '.env') });
+// Node 22's built-in .env reader, in place of the dotenv package. It throws on
+// a missing file where dotenv returned quietly, and CI has no .env at all -
+// there the secrets are already in the environment, so nothing needs loading.
+try {
+	process.loadEnvFile(join(projectRoot, '.env'));
+}
+catch {
+	// No .env: fall through and validate whatever the environment already holds
+}
 
 // Define required environment variables with validation rules
 const requiredEnvVars = [

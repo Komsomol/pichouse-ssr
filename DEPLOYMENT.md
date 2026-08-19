@@ -36,6 +36,7 @@ This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated 
 | **Cloudflare Pages** | Static site hosting with global CDN |
 | **Nuxt 3** | Generates static HTML at build time |
 | **TMDb/OMDB APIs** | Movie metadata, trailers, posters |
+| **Box Office Mojo** | UK weekend top 10 (scraped, no key) |
 | **Picturehouse API** | Cinema showtimes and availability |
 
 ## Workflow Files

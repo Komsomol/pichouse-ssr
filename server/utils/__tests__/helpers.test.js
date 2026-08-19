@@ -3,6 +3,7 @@ import {
 	createFallbackVideos,
 	meetsTimeRequirement,
 	generateBookingUrl,
+	normalizeTitleKey,
 } from '../helpers.js';
 
 describe('createFallbackVideos', () => {
@@ -95,5 +96,29 @@ describe('generateBookingUrl', () => {
 		const template = 'https://booking.com/{cinemaId}/{sessionId}';
 		const result = generateBookingUrl('022', '99999', template);
 		expect(result).toBe('https://booking.com/022/99999');
+	});
+});
+
+describe('normalizeTitleKey', () => {
+	it('lowercases and collapses punctuation to single spaces', () => {
+		expect(normalizeTitleKey('Spider-Man: Brand New Day')).toBe('spider man brand new day');
+		expect(normalizeTitleKey('  Wicked:  For Good!  ')).toBe('wicked for good');
+	});
+
+	it('folds accents so a listing meets a native title', () => {
+		expect(normalizeTitleKey('Sir\u0101t')).toBe('sirat');
+		expect(normalizeTitleKey('Cos\u00EC fan tutte')).toBe('cosi fan tutte');
+		expect(normalizeTitleKey('Boi\u00FAna')).toBe('boiuna');
+	});
+
+	it('spells out "&" so it meets "and"', () => {
+		expect(normalizeTitleKey('Sid & Nancy')).toBe(normalizeTitleKey('Sid and Nancy'));
+		expect(normalizeTitleKey('UK & IE')).toBe('uk and ie');
+	});
+
+	it('handles empty input', () => {
+		expect(normalizeTitleKey('')).toBe('');
+		expect(normalizeTitleKey(null)).toBe('');
+		expect(normalizeTitleKey(undefined)).toBe('');
 	});
 });

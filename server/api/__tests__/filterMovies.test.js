@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeMovieTitle, filterMoviesByCinemaAndRemoveDuplicates, cleanTitleForSearch } from '../filterMovies.js';
+import { sanitizeMovieTitle, filterMoviesByCinemaAndRemoveDuplicates, cleanTitleForSearch, stripStrandPrefix, filterByExactTitle } from '../filterMovies.js';
 
 describe('cleanTitleForSearch', () => {
 	it('should remove 35mm format indicator', () => {
@@ -32,9 +32,106 @@ describe('cleanTitleForSearch', () => {
 		expect(cleanTitleForSearch('The Godfather')).toBe('The Godfather');
 	});
 
+	it('should strip any event add-on after a "+"', () => {
+		expect(cleanTitleForSearch('Pressure + Q&A')).toBe('Pressure');
+		expect(cleanTitleForSearch('Pressure + Live Broadcast Q&A')).toBe('Pressure');
+		expect(cleanTitleForSearch('Paddington + PJ Party')).toBe('Paddington');
+		expect(cleanTitleForSearch('Elf + Mulled Wine & Festive Cakes')).toBe('Elf');
+		// Any future add-on wording, without needing a pattern of its own
+		expect(cleanTitleForSearch('Pressure + Director Introduction')).toBe('Pressure');
+	});
+
+	it('should keep a title that is only a "+" clause', () => {
+		// Stripping would empty it, so the original stands
+		expect(cleanTitleForSearch('+1')).toBe('+1');
+	});
+
 	it('should handle empty or null input', () => {
 		expect(cleanTitleForSearch('')).toBe('');
 		expect(cleanTitleForSearch(null)).toBe('');
+	});
+});
+
+describe('stripStrandPrefix', () => {
+	it('drops a season or strand prefix', () => {
+		expect(stripStrandPrefix('Out at Clapham: Beautiful Thing')).toBe('Beautiful Thing');
+		expect(stripStrandPrefix('Green Screen: Burning Skies')).toBe('Burning Skies');
+		expect(stripStrandPrefix('Dog-Friendly Screening: The Odyssey')).toBe('The Odyssey');
+		expect(stripStrandPrefix('CFS: Sirat')).toBe('Sirat');
+	});
+
+	it('splits on the first colon so a nested title survives', () => {
+		expect(stripStrandPrefix('CFS: Pompei: Below the Clouds')).toBe('Pompei: Below the Clouds');
+	});
+
+	it('drops a presenter named without a colon', () => {
+		expect(stripStrandPrefix('American Library presents Pressure')).toBe('Pressure');
+		expect(stripStrandPrefix('Green Screen with UKELA Presents 2040')).toBe('2040');
+	});
+
+	it('returns an empty string when there is no prefix to drop', () => {
+		expect(stripStrandPrefix('The Godfather')).toBe('');
+		expect(stripStrandPrefix('')).toBe('');
+		expect(stripStrandPrefix(null)).toBe('');
+	});
+
+	it('does not treat a leading colon as a prefix', () => {
+		expect(stripStrandPrefix(': Pressure')).toBe('');
+	});
+
+	// It cannot tell a strand prefix from a real title's colon - that is why
+	// fetchMovieFromTMDb only calls it after a search has already come back empty
+	it('would also split a genuine title, hence retry-only use', () => {
+		expect(stripStrandPrefix('Wicked: For Good')).toBe('For Good');
+	});
+});
+
+describe('filterByExactTitle', () => {
+	const movie = (title, original_title = title) => ({ title, original_title });
+
+	it('rejects a longer film that merely contains the query', () => {
+		// TMDb's first result for "Resurrection" is "Alien Resurrection"
+		const results = [movie('Alien Resurrection', 'Alien: Resurrection')];
+		expect(filterByExactTitle('Resurrection', results)).toEqual([]);
+	});
+
+	it('finds the exact match further down the results', () => {
+		const results = [
+			movie('Alien Resurrection', 'Alien: Resurrection'),
+			movie('Resurrection'),
+		];
+		expect(filterByExactTitle('Resurrection', results)).toHaveLength(1);
+		expect(filterByExactTitle('Resurrection', results)[0].title).toBe('Resurrection');
+	});
+
+	it('matches on the English title of a foreign film', () => {
+		const results = [movie('Snake in the Monkey\'s Shadow', '\u7334\u5F62\u6263\u624B')];
+		expect(filterByExactTitle('Snake in the Monkey\'s Shadow', results)).toHaveLength(1);
+	});
+
+	it('matches on the original title when the listing uses it', () => {
+		const results = [movie('Diamonds', 'Diamanti')];
+		expect(filterByExactTitle('Diamanti', results)).toHaveLength(1);
+	});
+
+	it('ignores accents and punctuation', () => {
+		expect(filterByExactTitle('Sirat', [movie('Sir\u0101t')])).toHaveLength(1);
+		expect(filterByExactTitle('Cosi Fan Tutte', [movie('Cos\u00EC fan tutte')])).toHaveLength(1);
+	});
+
+	it('treats "&" and "and" as the same word', () => {
+		expect(filterByExactTitle('Sid & Nancy', [movie('Sid and Nancy')])).toHaveLength(1);
+	});
+
+	it('returns every same-name candidate so the caller still chooses', () => {
+		const results = [movie('Pressure'), movie('Pressure'), movie('Under Pressure')];
+		expect(filterByExactTitle('Pressure', results)).toHaveLength(2);
+	});
+
+	it('handles missing input', () => {
+		expect(filterByExactTitle('', [movie('Pressure')])).toEqual([]);
+		expect(filterByExactTitle('Pressure', null)).toEqual([]);
+		expect(filterByExactTitle('Pressure', [null, undefined])).toEqual([]);
 	});
 });
 

@@ -10,6 +10,7 @@
 
 import { TRAILER_CONFIG } from '../utils/constants';
 import { STUDIO_CHANNELS } from '../utils/channels';
+import { normalizeTitleKey } from '../utils/helpers';
 
 // Studio names we recognise, for stripping a "(Universal Pictures)" credit out
 // of a title before comparing it. Only exact parenthesised matches are removed:
@@ -164,16 +165,17 @@ export const getTrailersOnly = (
  * @returns {string} Normalized comparison key
  */
 export const normalizeTitle = title =>
-	String(title || '')
-		.toLowerCase()
-		.replace(/[‘’]/g, '\'') // curly apostrophes -> straight
-		.replace(/[–—]/g, '-') // en/em dash -> hyphen
-		.replace(/\b(?:4k|uhd|hd|60fps|dolby vision)\b/g, '') // quality tags
-		.replace(/\(([^)]+)\)/g, (match, inner) =>
-			STUDIO_NAMES.has(inner.trim()) ? ' ' : match) // parenthesised credit
-		.replace(/\|([^|]*)$/, (match, segment) =>
-			STUDIO_NAMES.has(segment.trim()) ? '' : match) // trailing credit
-		.replace(/[^a-z0-9]+/g, ' ') // remaining punctuation -> space
+	normalizeTitleKey(
+		String(title || '')
+			.toLowerCase()
+			.replace(/\b(?:4k|uhd|hd|60fps|dolby vision)\b/g, '') // quality tags
+			.replace(/\(([^)]+)\)/g, (match, inner) =>
+				STUDIO_NAMES.has(inner.trim()) ? ' ' : match) // parenthesised credit
+			.replace(/\|([^|]*)$/, (match, segment) =>
+				STUDIO_NAMES.has(segment.trim()) ? '' : match), // trailing credit
+	)
+		// Applied after the shared key, which is what turns the varied separators
+		// around this clause into plain spaces
 		.replace(/\b(?:only )?in (?:theaters|theatres|cinemas)\b.*$/, '') // release clause
 		.trim();
 

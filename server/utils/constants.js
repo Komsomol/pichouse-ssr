@@ -59,3 +59,22 @@ export const TRAILER_CONFIG = {
 	PER_PAGE: 20, // Trailers per page in the UI
 	MAX_RESULTS: 50, // Videos requested per channel (YouTube API max)
 };
+
+// UK box office top 10 configuration
+//
+// Source is Box Office Mojo's British weekend chart. britinfo.net, which the
+// original scraper used, stopped publishing in September 2025.
+//
+// There is no "latest weekend" URL: the year index lists every weekend newest
+// first, so a build reads the first row's link and then fetches that chart.
+export const BOX_OFFICE_CONFIG = {
+	BASE_URL: 'https://www.boxofficemojo.com',
+	YEAR_INDEX_PATH: '/weekend/by-year/?area=GB',
+	// Year-specific index, used in early January before the current year has a
+	// published weekend
+	YEAR_INDEX_TEMPLATE: '/weekend/by-year/{year}/?area=GB',
+	TOP_N: 10,
+	// Mojo reports British grosses in US dollars, so the UI has to say so
+	CURRENCY: 'USD',
+	REQUEST_TIMEOUT: 15000,
+};
