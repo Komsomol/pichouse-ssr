@@ -46,7 +46,7 @@ jobs:
       # Must run BEFORE the check step - it populates $DATA_HASH_FILE with the
       # previous run's hash so the comparison below has something to compare to.
       - name: 📤 Restore previous data hash
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.DATA_HASH_FILE }}
           key: data-hash-${{ github.run_id }}
@@ -140,7 +140,7 @@ jobs:
       # re-saving keeps the cache entry from being evicted after 7 days idle.
       # The run_id in the key makes it unique, so the save never collides.
       - name: 💾 Cache data hash
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ env.DATA_HASH_FILE }}
           key: data-hash-${{ github.run_id }}
