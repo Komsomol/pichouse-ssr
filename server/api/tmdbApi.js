@@ -28,8 +28,50 @@ const findLatestMovie = movies =>
 		return movieReleaseDate > latestReleaseDate ? movie : latest;
 	});
 
-const filterTrailerVideos = videos =>
-	videos.filter(video => /trailer/i.test(video.name));
+const isYouTube = video => video?.site === 'YouTube';
+
+const namesATrailer = video => /\btrailers?\b/i.test(video?.name || '');
+
+const newestFirst = (a, b) =>
+	new Date(b.published_at || 0) - new Date(a.published_at || 0);
+
+// Among correctly typed trailers, one that calls itself a trailer outranks one
+// that does not, and only then does the newer win. Studios type their ticket
+// and countdown spots as Trailer too, and those are the newest thing a film
+// has by the time it charts.
+const bestFirst = (a, b) =>
+	Number(namesATrailer(b)) - Number(namesATrailer(a)) || newestFirst(a, b);
+
+/**
+ * Picks a film's trailers out of its TMDb videos, best first.
+ *
+ * Selection is by TMDb's `type` field, not the video's name. A name is
+ * marketing copy and frequently mentions "trailer" while being something else
+ * entirely - The End of Oak Street carries a featurette called "Have you
+ * experienced the new trailer?" that a name match ranked above the film's
+ * actual "Official Trailer".
+ *
+ * Official uploads win over fan submissions, and newer wins over older, so a
+ * caller taking the first entry gets the current official trailer.
+ *
+ * Where TMDb types nothing as a Trailer the old name match still runs, so a
+ * film that only ever had a teaser keeps a video rather than losing one.
+ *
+ * @param {Array} videos - TMDb video results
+ * @returns {Array} Trailers, best first
+ */
+export const filterTrailerVideos = (videos = []) => {
+	const youtube = videos.filter(isYouTube);
+	const trailers = youtube.filter(video => video.type === 'Trailer');
+	const official = trailers.filter(video => video.official);
+	const best = official.length > 0 ? official : trailers;
+
+	if (best.length > 0) {
+		return [...best].sort(bestFirst);
+	}
+
+	return youtube.filter(namesATrailer).sort(newestFirst);
+};
 
 const createPosterUrl = posterPath =>
 	posterPath ? `https://image.tmdb.org/t/p/w780${posterPath}` : null;
