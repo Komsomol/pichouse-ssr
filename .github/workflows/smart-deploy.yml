@@ -33,6 +33,7 @@ jobs:
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
       movie_count: ${{ steps.check.outputs.movie_count }}
+      skip_reason: ${{ steps.check.outputs.skip_reason }}
 
     steps:
       - name: 📥 Checkout repository
@@ -61,12 +62,15 @@ jobs:
           # Fetch movie data from Picturehouse API
           echo "Fetching movie data..."
 
+          # --retry covers the 5xx the gateway returns when it gives up on this
+          # 3.5MB response; --max-time keeps a hung attempt from eating a minute.
           RESPONSE=$(curl -s -X POST "https://www.picturehouses.com/api/get-movies-ajax?start_date=show_all_dates&cinema_id=029" \
             -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" \
             -H "Accept: */*" \
             -H "Origin: https://www.picturehouses.com" \
             -H "X-Requested-With: XMLHttpRequest" \
             -H "Cookie: $COOKIE" \
+            --max-time 30 --retry 2 --retry-delay 2 --retry-all-errors \
             --data "" 2>/dev/null || echo '{"movies":[]}')
 
           # Extract movie titles and showtimes to create a hash
@@ -123,18 +127,28 @@ jobs:
             echo "🔄 Force deploy requested"
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           elif [ "$NEW_HASH" = "error" ]; then
-            echo "⚠️ Failed to fetch data, deploying anyway"
-            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            # Do NOT deploy on a failed fetch. The build would hit the same
+            # broken upstream and generate a page whose only content is an
+            # error, replacing a working site with it - which is how 31 Aug
+            # 2026 went. Holding leaves the last good deploy up.
+            echo "⚠️ Failed to fetch Picturehouse data. Holding the current deploy."
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "skip_reason=Picturehouse fetch failed - the current deploy was left in place." >> $GITHUB_OUTPUT
           elif [ "$NEW_HASH" != "$OLD_HASH" ]; then
             echo "✨ Data has changed! Will deploy."
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
             echo "😴 No changes detected. Skipping deploy."
             echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "skip_reason=No changes in movie data." >> $GITHUB_OUTPUT
           fi
 
-          # Save new hash for comparison
-          echo "$NEW_HASH" > "$DATA_HASH_FILE"
+          # Save new hash for comparison. A failed fetch is not a data state, so
+          # it is never recorded - otherwise two failures in a row compare equal
+          # and the outage looks like "no changes".
+          if [ "$NEW_HASH" != "error" ]; then
+            echo "$NEW_HASH" > "$DATA_HASH_FILE"
+          fi
 
       # Saved unconditionally: on a skipped deploy the hash is unchanged, but
       # re-saving keeps the cache entry from being evicted after 7 days idle.
@@ -211,11 +225,11 @@ jobs:
     if: needs.check-for-updates.outputs.should_deploy == 'false'
     runs-on: ubuntu-latest
     steps:
-      - name: 😴 No changes detected
+      - name: 😴 Deployment skipped
         run: |
           echo "### 😴 Skipped Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "No changes detected in movie data. Deployment skipped to save build minutes." >> $GITHUB_STEP_SUMMARY
+          echo "${{ needs.check-for-updates.outputs.skip_reason }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Movies in API:** ${{ needs.check-for-updates.outputs.movie_count }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Next check:** Tomorrow at 6 AM UTC" >> $GITHUB_STEP_SUMMARY
