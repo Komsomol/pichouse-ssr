@@ -10,9 +10,16 @@ on:
         default: false
         type: boolean
 
-  # Scheduled trigger - Daily at 6 AM UTC
+  # Scheduled trigger - daily at 06:37 UTC.
+  #
+  # Not on the hour. GitHub's schedule event is best-effort: it queues on a
+  # shared pool, slips under load, and gets dropped outright when the queue is
+  # deep - and the top of the hour is the most contended minute there is. On
+  # '0 6 * * *' this ran on time until 26 Aug 2026, then 5-12h late every day,
+  # then missed 1 Sep entirely. That miss is why the 31 Aug outage was still
+  # live the next morning instead of self-healing on the next run.
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '37 6 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -218,7 +225,7 @@ jobs:
           echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Live URL:** https://pichouse-ssr.pages.dev" >> $GITHUB_STEP_SUMMARY
-          echo "- **Next check:** Tomorrow at 6 AM UTC" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** Tomorrow at 06:37 UTC" >> $GITHUB_STEP_SUMMARY
 
   skip-notification:
     needs: check-for-updates
@@ -232,5 +239,5 @@ jobs:
           echo "${{ needs.check-for-updates.outputs.skip_reason }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Movies in API:** ${{ needs.check-for-updates.outputs.movie_count }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Next check:** Tomorrow at 6 AM UTC" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** Tomorrow at 06:37 UTC" >> $GITHUB_STEP_SUMMARY
 

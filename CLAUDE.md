@@ -16,7 +16,7 @@ Nuxt 3 static site with four tabs:
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Node:** 22+ required (`eslint-plugin-unicorn` uses `Set.prototype.union`, absent on 20)
 - **Hosting:** Cloudflare Pages via Wrangler
-- **CI/CD:** GitHub Actions (daily check at 6 AM UTC)
+- **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
 - **UI:** Vue 3 Composition API
 - **Testing:** Vitest + happy-dom (146 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
@@ -31,7 +31,7 @@ runtime backend - the deployed artifact is static HTML - so API keys never reach
 the client.
 
 ```
-GitHub Actions (smart-deploy, daily 6 AM UTC)
+GitHub Actions (smart-deploy, daily 06:37 UTC)
     │
     ├── Fingerprint Picturehouse feed; skip build if unchanged
     │
@@ -150,7 +150,7 @@ saying only "Failed to load movies" gets deployed over a working site.
 
 | Workflow | Triggers | Behaviour |
 |----------|----------|-----------|
-| `smart-deploy.yml` | Daily 06:00 UTC, manual | Hashes the Picturehouse feed, builds only on change |
+| `smart-deploy.yml` | Daily 06:37 UTC, manual | Hashes the Picturehouse feed, builds only on change |
 | `deploy.yml` | Push to `main`, manual | Always builds |
 
 `smart-deploy.yml` owns the schedule and re-enables itself via the API each run
@@ -204,6 +204,18 @@ Test files:
   then appears in `gh secret list` while the build behaves as if it is unset.
 - **Cloudflare edge can serve a stale HTML shell for a minute after deploy.**
   Add a cache-busting query before concluding a deploy failed.
+- **GitHub's cron is best-effort, and the top of the hour is the worst slot.**
+  `schedule` queues on a shared pool, slips under load, and is dropped when the
+  queue is deep. On `0 6 * * *` this fired on time until 26 Aug 2026, then ran
+  5-12h late every day, then missed 1 Sep entirely - which is why the 31 Aug
+  outage was still live the next morning instead of self-healing on the next
+  run. Now `37 6 * * *`. If days start going missing again, the next step is an
+  external trigger (a Cloudflare Worker cron calling `workflow_dispatch`)
+  rather than another cron minute.
+- **A failed run now defers recovery to the next run.** smart-deploy holds the
+  current deploy when the fetch fails rather than replacing it, so the site
+  stays correct - but it only refreshes when a later run succeeds. That makes
+  the schedule actually firing a reliability dependency, not a convenience.
 - **The smart-deploy fingerprint only covers Picturehouse data.** New studio
   trailers, and a new box office weekend, will not trigger a rebuild on their own.
 - **The Picturehouse feed is ~3.5MB and its gateway sometimes gives up on it.**

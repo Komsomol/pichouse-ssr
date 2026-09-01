@@ -41,7 +41,7 @@ A statically generated site with three listings tabs - **Cinema**, showing Scree
 
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
-- **CI/CD:** GitHub Actions (daily check at 6 AM UTC)
+- **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
 - **Testing:** Vitest (146 tests)
 - **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped)
 
@@ -131,7 +131,7 @@ Two GitHub Actions workflows deploy to Cloudflare Pages via Wrangler. See
 
 | Workflow | Triggers | Behaviour |
 | --- | --- | --- |
-| `smart-deploy.yml` | Daily 06:00 UTC, manual | Fingerprints the Picturehouse feed and only rebuilds when it changed |
+| `smart-deploy.yml` | Daily 06:37 UTC, manual | Fingerprints the Picturehouse feed and only rebuilds when it changed |
 | `deploy.yml` | Push to `main`, manual | Always rebuilds and deploys |
 
 `smart-deploy.yml` owns the daily schedule; `deploy.yml` covers code changes. It
