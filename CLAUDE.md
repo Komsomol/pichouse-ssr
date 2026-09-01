@@ -193,6 +193,17 @@ Test files:
 11. **Verify dependency changes with `npm ci`, not `npm install`** - see gotchas
 12. **Tests and ESLint must pass**
 
+## Incident log
+
+`/docs/` holds a write-up per outage - timeline, what was ruled out, root cause,
+what shipped, and what to watch next. Read the relevant one before re-litigating
+a gotcha below; the short version here is the conclusion, the log has the evidence.
+
+- [`2026-08-31-picturehouse-outage.md`](docs/2026-08-31-picturehouse-outage.md) -
+  Cinema tab down ~21h. Gateway timeout on the 3.5MB feed, no retry, a build that
+  exited 0 anyway, a workflow that deployed *because* the fetch failed, and a
+  missed cron that skipped the automatic recovery.
+
 ## Gotchas
 
 - **`npm install` can produce a lockfile `npm ci` rejects.** `@bomb.sh/tab` (via
