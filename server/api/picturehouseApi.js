@@ -1,6 +1,7 @@
 // server/api/picturehouseApi.js
 import axios from 'axios';
 import { picturehouseCache } from '../utils/cache.js';
+import { PICTUREHOUSE_CONFIG } from '../utils/constants.js';
 
 // Configuration constants (pure data)
 // Nuxt loads .env before a server route runs, which is why the other API
@@ -32,6 +33,35 @@ const createApiUrl = cinemaId =>
 const isValidResponse = response =>
 	response?.data?.movies && Array.isArray(response.data.movies);
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Retry gateway failures and timeouts only. A 4xx means the request itself is
+// wrong, so repeating it just burns another timeout's worth of build time.
+const isRetryable = error =>
+	!error.response || error.code === 'ECONNABORTED' || error.response.status >= 500;
+
+// Recursive rather than a loop so there is no unreachable throw after it:
+// every path either returns a response or rethrows.
+const postWithRetry = async (url, body, headers, attempt = 1) => {
+	try {
+		return await axios.post(url, body, {
+			headers,
+			timeout: PICTUREHOUSE_CONFIG.REQUEST_TIMEOUT,
+		});
+	}
+	catch (error) {
+		if (attempt >= PICTUREHOUSE_CONFIG.MAX_ATTEMPTS || !isRetryable(error)) {
+			throw error;
+		}
+
+		const wait = PICTUREHOUSE_CONFIG.RETRY_DELAY_MS * attempt;
+		console.warn(`⚠ [Picturehouse] Attempt ${attempt}/${PICTUREHOUSE_CONFIG.MAX_ATTEMPTS} failed (${error.message}), retrying in ${wait}ms`);
+		await delay(wait);
+
+		return postWithRetry(url, body, headers, attempt + 1);
+	}
+};
+
 // Main fetch function with functional composition
 export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
 	const cacheKey = `picturehouse:movies:${cinemaId}`;
@@ -48,7 +78,7 @@ export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
 	requestBody.append('', '');
 
 	try {
-		const response = await axios.post(url, requestBody, { headers });
+		const response = await postWithRetry(url, requestBody, headers);
 
 		if (!isValidResponse(response)) {
 			throw new Error('Invalid response from Picturehouse API');

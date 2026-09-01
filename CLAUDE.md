@@ -18,7 +18,7 @@ Nuxt 3 static site with four tabs:
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (daily check at 6 AM UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (116 tests)
+- **Testing:** Vitest + happy-dom (146 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Concurrency:** p-limit (5 TMDb, 8 YouTube)
@@ -35,7 +35,7 @@ GitHub Actions (smart-deploy, daily 6 AM UTC)
     │
     ├── Fingerprint Picturehouse feed; skip build if unchanged
     │
-    ▼ npm run generate  (validate:env → lint → test → nuxt generate)
+    ▼ npm run generate  (validate:env → lint → test → nuxt generate → verify:build)
     │
     ├── /server/api/movies.js
     │     ├── fetchMoviesFromPicturehouse() [cached 1hr]
@@ -65,7 +65,7 @@ Static HTML → Cloudflare Pages CDN → https://pichouse-ssr.pages.dev
 | File | Purpose |
 |------|---------|
 | `/server/api/movies.js` | Cinema listings orchestrator |
-| `/server/api/picturehouseApi.js` | Picturehouse API client (cinema ID hardcoded `029`) |
+| `/server/api/picturehouseApi.js` | Picturehouse API client (cinema ID hardcoded `029`), 30s timeout + 3 attempts |
 | `/server/api/tmdbApi.js` | TMDb API client |
 | `/server/api/omdbApi.js` | OMDB API client (fallback) |
 | `/server/api/filterMovies.js` | Title sanitization, cleaning for search |
@@ -86,6 +86,7 @@ Static HTML → Cloudflare Pages CDN → https://pichouse-ssr.pages.dev
 | `/components/NavTabs.vue` | Tab bar (rendered from `app.vue`) |
 | `/components/movies/MovieListStyles.css` | Design tokens + shared layout for all pages |
 | `/components/movies/VideoModal.vue` | Trailer modal (shared by Cinema, Trailers and Box Office) |
+| `/scripts/verify-build.js` | Post-generate guard: fails the build on an empty or errored Cinema tab |
 | `/.github/workflows/deploy.yml` | Push + manual deploy (no cron) |
 | `/.github/workflows/smart-deploy.yml` | Daily deploy, skips when data unchanged |
 
@@ -96,6 +97,7 @@ Static HTML → Cloudflare Pages CDN → https://pichouse-ssr.pages.dev
 ```javascript
 CINEMA_IDS: { FINSBURY_PARK: '029', PICTUREHOUSE_CENTRAL: '022' }
 SCREENING_CONFIG: { SCREEN_NAME: 'Screen 1', MIN_HOUR: 18 }  // MIN_HOUR: weekdays only
+PICTUREHOUSE_CONFIG: { REQUEST_TIMEOUT: 30000, MAX_ATTEMPTS: 3, RETRY_DELAY_MS: 2000 }
 TRAILER_CONFIG: {
   SEARCH_KEYWORDS: ['official trailer', 'final trailer'],
   EXCLUDED_KEYWORDS: [...teasers, blu-ray, series markers, 'disney+', 'marvel television'],
@@ -139,7 +141,10 @@ npm run preview      # Preview generated site
 ```
 
 `generate`/`build` run validate:env → lint → test first, so a lint error or a
-failing test blocks a deploy.
+failing test blocks a deploy. `generate` then runs `verify:build`, which fails
+the build if the generated Cinema tab rendered its error state or has no
+listings - `nuxt generate` alone exits 0 in that case, so without it a page
+saying only "Failed to load movies" gets deployed over a working site.
 
 ## Deployment
 
@@ -155,6 +160,7 @@ took the site down 16 Jun - 7 Jul 2026).
 ## Testing
 
 Test files:
+- `server/api/__tests__/picturehouseApi.test.js`
 - `server/api/__tests__/filterMovies.test.js`
 - `server/api/__tests__/filterTrailers.test.js`
 - `server/api/__tests__/filterBoxOffice.test.js`
@@ -200,6 +206,15 @@ Test files:
   Add a cache-busting query before concluding a deploy failed.
 - **The smart-deploy fingerprint only covers Picturehouse data.** New studio
   trailers, and a new box office weekend, will not trigger a rebuild on their own.
+- **The Picturehouse feed is ~3.5MB and its gateway sometimes gives up on it.**
+  `get-movies-ajax` ignores `cinema_id` and always returns all 25 cinemas. On
+  31 Aug 2026 the build hung ~60s per attempt and got a 504 then a 502; the page
+  that shipped said only "Failed to load movies". The route itself is fine - it
+  answers 200 with or without the `COOKIE` header, and the body-vs-query form of
+  the parameters makes no difference. Hence the timeout, the retries, and
+  `verify:build`. `scheduled-movies-ajax` with `cinema_id=029` does honour the
+  filter (465KB for both cinemas, ~1.7s) but drops `Rating`, `RunTime` and
+  `filter_class_names`, which the Cinema tab renders and `movies.js` uses.
 - **Box Office Mojo has no "latest weekend" URL.** A build reads the year index
   and follows the first row, so the chart lags the weekend by however long Mojo
   takes to publish. `britinfo.net`, which `uk_top_10_scraper` used, has not

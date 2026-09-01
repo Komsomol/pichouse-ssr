@@ -28,6 +28,19 @@ export const SCREENING_CONFIG = {
 	BOOKING_URL_TEMPLATE: 'https://web.picturehouses.com/order/showtimes/{cinemaId}-{sessionId}/seats',
 };
 
+// Picturehouse API configuration
+//
+// The show_all_dates feed is ~3.5MB - the endpoint ignores cinema_id and always
+// returns every cinema - and Picturehouse's gateway intermittently gives up on
+// serving it: the 31 Aug 2026 build hung ~60s per attempt and got a 504 then a
+// 502. A bounded timeout plus retries rides those blips out instead of losing
+// the whole build to one of them.
+export const PICTUREHOUSE_CONFIG = {
+	REQUEST_TIMEOUT: 30000,
+	MAX_ATTEMPTS: 3,
+	RETRY_DELAY_MS: 2000, // multiplied by the attempt number, so 2s then 4s
+};
+
 // Performance configuration
 export const PERFORMANCE_CONFIG = {
 	MAX_CONCURRENT_TMDB_REQUESTS: 5,
