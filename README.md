@@ -4,19 +4,20 @@
 [![Deploy](https://img.shields.io/badge/Deploy-Cloudflare_Pages-orange?style=flat-square)](https://pichouse-ssr.pages.dev)
 [![Daily Build](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml/badge.svg)](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml)
 
-A statically generated site with three listings tabs - **Cinema**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
+A statically generated site with three listings tabs - **Movies**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
 
 ### 🔗 **[View Live Site → pichouse-ssr.pages.dev](https://pichouse-ssr.pages.dev)**
 
 ## Features
 
-### Cinema tab
+### Movies tab
 
 - 🎬 **Movie Listings** - Screen 1 showtimes from Finsbury Park & Picturehouse Central
 - 🎥 **Trailers** - YouTube trailers per film via TMDb, with OMDB fallback
 - ⭐ **Metadata** - Overview, runtime, release date and rating from TMDb
 - 🎟️ **Booking Links** - Direct links to Picturehouse booking
 - 📅 **Smart Filtering** - Weekday evenings (after 6 PM) + all weekend showtimes
+- 🏷️ **Event Screenings Matched** - "Film + Q&A with ..." listings still find the film's poster and trailer
 
 ### Trailers tab
 
@@ -28,21 +29,23 @@ A statically generated site with three listings tabs - **Cinema**, showing Scree
 ### Box Office tab
 
 - 💷 **UK Weekend Top 10** - Ranked chart with weekend and running totals
+- 🔁 **Re-releases** - Matched to the original film's poster and trailer, with an optional display name
 - 🎞️ **Trailers** - A playable TMDb trailer per film, falling back to a YouTube search link
 - ⭐ **Metadata** - Poster, synopsis, runtime and rating from TMDb
 
 ### All three
 
 - 📱 **Mobile First** - Layout, showtime grid and tap targets tuned for phones
-- 🌗 **Light & Dark** - Follows the reader's system theme
+- 🌗 **Light & Dark** - Follows the reader's system theme; dark is the light theme inverted
 - 🚀 **Auto-Updates** - Rebuilt daily via GitHub Actions when the listings change
+- ▶️ **Trailers your way** - Click to play in a pop-up, or middle/Cmd/Ctrl-click to open on YouTube in a new tab
 
 ## Tech Stack
 
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
 - **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
-- **Testing:** Vitest (146 tests)
+- **Testing:** Vitest (148 tests)
 - **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever
@@ -91,7 +94,7 @@ reach the browser and the deployed site is plain static HTML.
 npm run dev
 ```
 
-Access at: http://localhost:4000
+Access at: http://127.0.0.1:3000
 
 ### Run Tests
 
@@ -156,18 +159,18 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 ```
 ├── .github/workflows/     # Daily (smart-deploy) and push (deploy) pipelines
 ├── components/
-│   ├── NavTabs.vue        # Cinema / Trailers / Box Office / About tab bar
+│   ├── NavTabs.vue        # Movies / Trailers / Box Office / About tab bar
 │   ├── movies/            # Movie list composable, styles, video modal
 │   ├── trailers/          # Trailer list composable and styles
 │   └── boxoffice/         # Box office list composable and styles
 ├── pages/
-│   ├── index.vue          # Cinema tab
+│   ├── index.vue          # Movies tab
 │   ├── trailers.vue       # Trailers tab
 │   ├── boxoffice.vue      # Box Office tab
 │   └── about.vue          # About tab
 ├── server/
 │   ├── api/
-│   │   ├── movies.js           # Cinema listings endpoint
+│   │   ├── movies.js           # Movies tab endpoint
 │   │   ├── picturehouseApi.js  # Picturehouse feed
 │   │   ├── tmdbApi.js          # TMDb integration
 │   │   ├── omdbApi.js          # OMDB fallback
@@ -177,13 +180,13 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 │   │   ├── filterTrailers.js   # Trailer filtering, sorting, dedup
 │   │   ├── boxoffice.js        # UK box office top 10 endpoint
 │   │   ├── boxOfficeApi.js     # Box Office Mojo scraper
-│   │   └── filterBoxOffice.js  # Chart parsing and trailer matching
+│   │   └── filterBoxOffice.js  # Chart parsing (film name, re-release label)
 │   └── utils/
 │       ├── constants.js   # Cinema IDs, screening rules, trailer and box office config
 │       ├── channels.js    # Studio YouTube channels
 │       ├── helpers.js     # Showtime helpers
 │       └── cache.js       # In-memory TTL caches
-├── scripts/               # Environment validation
+├── scripts/               # Environment validation, post-build check
 ├── .env.example           # Environment template
 ├── DEPLOYMENT.md          # Deployment documentation
 └── CLAUDE.md              # AI context documentation
@@ -228,6 +231,10 @@ Edit `BOX_OFFICE_CONFIG` in `server/utils/constants.js`:
 - **TOP_N** - how many films to keep (10)
 - **YEAR_INDEX_PATH** - Box Office Mojo's British weekend index, read to find the
   latest published chart
+- **TITLE_ALIASES** - display names for chart entries Mojo lists under the
+  original film, keyed by `"<title> (<label>)"`, e.g.
+  `'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore'`. TMDb is
+  still searched on the original title.
 
 Grosses are shown as Box Office Mojo reports them, in **US dollars**. The chart
 itself needs no API key; posters, synopses, runtimes, ratings and trailers come
