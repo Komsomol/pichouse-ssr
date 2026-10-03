@@ -6,7 +6,7 @@ This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   GitHub Actions (Daily 06:37 UTC)             │
+│                GitHub Actions (07:37 + 21:37 UTC)              │
 ├─────────────────────────────────────────────────────────────────┤
 │  1. Checkout code from repository                               │
 │  2. Install dependencies (npm ci)                               │
@@ -48,8 +48,9 @@ This project uses **GitHub Actions** + **Cloudflare Pages** for fully automated 
 - Good for: Reliability, simplicity
 
 ### `smart-deploy.yml` - Smart Deploy
-- Runs daily at 06:37 UTC
-- Checks if Picturehouse movie data has changed
+- Runs at 07:37 and 21:37 UTC, just after Clusterflick's morning and evening
+  BFI IMAX releases
+- Checks if Picturehouse movie data or BFI IMAX listings have changed
 - Skips build if data unchanged (saves GitHub Actions minutes)
 - Good for: Efficiency, reducing unnecessary builds
 
@@ -131,13 +132,13 @@ rebuild every morning.
 
 ```yaml
 schedule:
-  - cron: '37 6 * * *'  # Daily at 06:37 UTC - off the hour on purpose
+  - cron: '37 7,21 * * *'  # 07:37 and 21:37 UTC - off the hour on purpose
 ```
 
 **Common schedules:**
 | Cron | Description |
 |------|-------------|
-| `37 6 * * *` | Daily at 06:37 UTC |
+| `37 7,21 * * *` | 07:37 and 21:37 UTC (current) |
 | `0 6 * * 0` | Weekly on Sundays |
 | `0 6 * * 1,4` | Monday and Thursday |
 | `0 */12 * * *` | Every 12 hours |

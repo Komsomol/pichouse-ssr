@@ -97,3 +97,15 @@ export const BOX_OFFICE_CONFIG = {
 		'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore',
 	},
 };
+
+// BFI IMAX listings. whatson.bfi.org.uk answers datacenter requests with a
+// Cloudflare challenge, so the build cannot read it directly. Clusterflick
+// scrapes it daily and publishes the result as a GitHub release asset under
+// CC BY 4.0 - which requires the credit shown on the IMAX and About pages.
+export const IMAX_CONFIG = {
+	SOURCE_URL: 'https://github.com/clusterflick/data-transformed/releases/latest/download/bfi.org.uk-imax',
+	CREDIT_URL: 'https://clusterflick.com',
+	REQUEST_TIMEOUT: 20000,
+	// Listing times are shown in London time whatever the build machine's zone
+	TIME_ZONE: 'Europe/London',
+};

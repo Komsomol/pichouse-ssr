@@ -2,9 +2,10 @@
 
 ## Overview
 
-Nuxt 3 static site with four tabs:
+Nuxt 3 static site with five tabs:
 
 - **Movies** (`/`) - movies on **Screen 1** at Finsbury Park and Picturehouse Central, filtered to **weekday evenings (after 6 PM)** and **all weekend times**, with booking links and trailers.
+- **IMAX** (`/imax`) - every bookable screening at **BFI IMAX**, Waterloo, sold-out and past screenings removed. Data via Clusterflick (see BFI IMAX).
 - **Trailers** (`/trailers`) - official studio trailers from YouTube, last 30 days, filterable by studio.
 - **Box Office** (`/boxoffice`) - the UK weekend top 10 scraped from Box Office Mojo, enriched with TMDb metadata and trailers.
 - **About** (`/about`) - what the site is, how it updates, data sources and attribution.
@@ -20,9 +21,9 @@ incident log use that name.
 - **Node:** 22+ required. `eslint-plugin-unicorn` uses `Set.prototype.union`,
   absent on 20, and `scripts/validate-env.js` uses `process.loadEnvFile`.
 - **Hosting:** Cloudflare Pages via Wrangler
-- **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
+- **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (149 tests)
+- **Testing:** Vitest + happy-dom (159 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -37,9 +38,9 @@ runtime backend - the deployed artifact is static HTML - so API keys never reach
 the client.
 
 ```
-GitHub Actions (smart-deploy, daily 06:37 UTC)
+GitHub Actions (smart-deploy, 07:37 + 21:37 UTC)
     │
-    ├── Fingerprint Picturehouse feed; skip build if unchanged
+    ├── Fingerprint Picturehouse feed + BFI IMAX asset; skip build if both unchanged
     │
     ▼ npm run generate  (validate:env → lint → test → nuxt generate → verify:build)
     │
@@ -49,6 +50,11 @@ GitHub Actions (smart-deploy, daily 06:37 UTC)
     │     ├── Deduplicate by original title
     │     ├── Enrich with TMDb [cached 6hr, 5 concurrent] → OMDB fallback
     │     └── Booking URLs, sort by earliest showtime, drop raw feed arrays
+    │
+    ├── /server/api/imax.js
+    │     ├── Clusterflick BFI IMAX release asset (GitHub) [cached 1hr]
+    │     ├── Drop sold-out / past performances and films left with none
+    │     └── Poster + trailers from TMDb by id [5 concurrent]
     │
     ├── /server/api/trailers.js
     │     ├── 50 studio channels, uploads playlist derived UC→UU [8 concurrent]
@@ -74,7 +80,7 @@ so `movies.js` drops `show_times`, `movie_times` and `_screen1Showtimes` in its
 final map. That took the payload from 656KB to 54KB. A new field the page needs
 must be added to what survives, not by passing the whole feed object through.
 
-**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all four
+**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all five
 routes under `nitro.prerender.routes`. Link crawling only discovers the other
 tabs once `/` has rendered, and `/` waits on a Picturehouse request that takes
 10-17s, so the Trailers and Box Office work used to queue behind it. Declared,
@@ -97,6 +103,10 @@ Do not remove the list.
 | `/server/api/boxOfficeApi.js` | Box Office Mojo client (two-step: year index → chart) |
 | `/server/utils/constants.js` | Cinema IDs, screen config, trailer + box office config |
 | `/server/api/filterBoxOffice.js` | Chart parsing (cheerio) |
+| `/server/api/imax.js` | BFI IMAX orchestrator |
+| `/server/api/imaxApi.js` | Fetches Clusterflick's BFI IMAX JSON |
+| `/server/api/filterImax.js` | Sold-out/past filtering, London-time formatting |
+| `/pages/imax.vue` | IMAX tab (reuses the Movies tab's layout classes) |
 | `/server/utils/channels.js` | 50 studio YouTube channels |
 | `/server/utils/helpers.js` | Pure utilities incl. `normalizeTitleKey` (shared comparison key) |
 | `/server/utils/cache.js` | TTL-based caches |
@@ -133,6 +143,11 @@ BOX_OFFICE_CONFIG: {
   TOP_N: 10,
   CURRENCY: 'USD',  // Mojo reports British grosses in dollars
   TITLE_ALIASES: { 'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore' }
+}
+IMAX_CONFIG: {
+  SOURCE_URL: 'https://github.com/clusterflick/data-transformed/releases/latest/download/bfi.org.uk-imax',
+  CREDIT_URL: 'https://clusterflick.com',
+  TIME_ZONE: 'Europe/London'  // build runs in UTC; times must read as London
 }
 ```
 
@@ -189,6 +204,40 @@ still shows it. Newest-within-rank lands on the "Final Trailer" wherever one
 exists - a final trailer always postdates the official trailer it follows - so
 that needs no special case. Where TMDb types nothing as Trailer, the old name
 match runs as a fallback rather than the film losing its video.
+
+## BFI IMAX
+
+**Do not scrape whatson.bfi.org.uk.** It sits behind a Cloudflare challenge:
+a browser passes silently, but any request from a datacenter - GitHub Actions
+included - gets a 403 "Just a moment..." page, with or without a session
+`sToken` in the URL. Getting past it would mean disguising the build as a
+human browser (stealth headless browsers, challenge solvers, spoofed
+fingerprints). That is evading protection BFI chose to put up - don't.
+`www.bfi.org.uk/bfi-imax` is not challenged but carries no listings.
+
+**Data comes from Clusterflick** (clusterflick.com), an open-source project that
+gathers 250+ London cinemas daily. `clusterflick/data-transformed` publishes a
+per-venue asset; `bfi.org.uk-imax` is a JSON array of films, each with
+`title`, `themoviedb.id`, `overview.classification`/`duration` and
+`performances[]` of `{ time (epoch ms), bookingUrl, status.soldOut, format }`.
+The data is **CC BY 4.0: the credit on the IMAX page and the About sources list
+is a licence requirement**, not decoration. Keep both.
+
+- **TMDb id comes with the data,** so enrichment calls
+  `fetchVideosAndPosterFromTMDb(id)` directly - no title search, which BFI's
+  event titles ("25th Anniversary: ...", "... + Q&A with ...") often fail.
+- **Booking links are per film, not per screening.** BFI's links (and so
+  Clusterflick's) open the film's page, where you pick the showing. Each time
+  card links there; its `aria-label` names the screening.
+- **Times are formatted in `Europe/London` explicitly** - CI runs in UTC, so a
+  bare `toLocaleString` would show BST times an hour early.
+- **Freshness:** Clusterflick has no fixed schedule - it publishes when its
+  scrape finishes, typically twice a day: mornings 05:00-07:06 UTC, evenings
+  17:00-20:40 UTC (Sep-Oct 2026). smart-deploy runs at 07:37 and 21:37 UTC to
+  land after each, and fingerprints the IMAX asset (screenings + sold-out
+  flags) alongside Picturehouse, so an IMAX-only change deploys. A failed IMAX
+  fetch keeps the previous fingerprint - it never forces a build with an empty
+  tab. The hash cache file holds two lines: Picturehouse, then IMAX.
 
 ## Box office titles
 
@@ -292,7 +341,7 @@ saying only "Failed to load movies" gets deployed over a working site.
 
 | Workflow | Triggers | Behaviour |
 |----------|----------|-----------|
-| `smart-deploy.yml` | Daily 06:37 UTC, manual | Hashes the Picturehouse feed, builds only on change |
+| `smart-deploy.yml` | 07:37 + 21:37 UTC, manual | Hashes the Picturehouse feed and BFI IMAX asset, builds only on change |
 | `deploy.yml` | Push to `main`, manual | Always builds |
 
 `smart-deploy.yml` owns the schedule and re-enables itself via the API each run
@@ -312,6 +361,7 @@ Test files:
 - `server/api/__tests__/filterMovies.test.js`
 - `server/api/__tests__/filterTrailers.test.js`
 - `server/api/__tests__/filterBoxOffice.test.js`
+- `server/api/__tests__/filterImax.test.js`
 - `server/api/__tests__/tmdbApi.test.js`
 - `server/utils/__tests__/cache.test.js`
 - `server/utils/__tests__/helpers.test.js`
@@ -375,7 +425,8 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
   queue is deep. On `0 6 * * *` this fired on time until 26 Aug 2026, then ran
   5-12h late every day, then missed 1 Sep entirely - which is why the 31 Aug
   outage was still live the next morning instead of self-healing on the next
-  run. Now `37 6 * * *`. If days start going missing again, the next step is an
+  run. Moved to `37 6 * * *`, then on 3 Oct 2026 to `37 7,21 * * *` to land
+  after Clusterflick's two daily releases. If days start going missing again, the next step is an
   external trigger (a Cloudflare Worker cron calling `workflow_dispatch`)
   rather than another cron minute.
 - **A failed run now defers recovery to the next run.** smart-deploy holds the
@@ -395,8 +446,13 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
 - **`process.loadEnvFile` throws when `.env` is missing, where dotenv was quiet.**
   CI has no `.env` - secrets arrive as environment variables - so the call in
   `scripts/validate-env.js` must stay wrapped in try/catch.
-- **The smart-deploy fingerprint only covers Picturehouse data.** New studio
-  trailers, and a new box office weekend, will not trigger a rebuild on their own.
+- **The smart-deploy fingerprint covers Picturehouse and BFI IMAX only.** New
+  studio trailers and a new box office weekend will not trigger a rebuild on
+  their own.
+- **`nuxt generate` refuses to run while the dev server is up** ("Another Nuxt
+  dev is already running") and exits without building. `verify-build` then
+  checks the *previous* `.output` and passes. Stop the dev server before a local
+  production build.
 - **The Picturehouse feed is ~3.5MB and its gateway sometimes gives up on it.**
   `get-movies-ajax` ignores `cinema_id` and always returns all 25 cinemas. On
   31 Aug 2026 the build hung ~60s per attempt and got a 504 then a 502; the page
@@ -421,7 +477,8 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
 
 ## Known Limitations
 
-- BFI IMAX not supported (different ticketing system)
+- BFI IMAX depends on Clusterflick continuing to publish; BFI's own site cannot
+  be read by the build (see BFI IMAX)
 - No user accounts (booking redirects to Picturehouse)
 - Movies tab films only appear if a trailer exists on TMDb or OMDB
 - Trailers tab depends on YouTube API quota (~53 units/build against 10,000/day)

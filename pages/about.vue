@@ -20,6 +20,20 @@
 		</section>
 
 		<section class="about-section">
+			<h2>The IMAX tab</h2>
+			<p>
+				Every bookable screening at <strong>BFI IMAX</strong>, Waterloo - the
+				UK's biggest screen. Sold-out and past screenings are left out, and a
+				screening's time links to the film's page on BFI to book it.
+			</p>
+			<p>
+				BFI's booking site blocks automated requests, so these listings come
+				from Clusterflick, which gathers London cinema listings daily and
+				publishes them openly. Posters and trailers come from TMDb.
+			</p>
+		</section>
+
+		<section class="about-section">
 			<h2>The Trailers tab</h2>
 			<p>
 				Official trailers posted by film studios to YouTube in the
@@ -73,6 +87,22 @@
 					>Picturehouse</a>
 				</dt>
 				<dd>Showtimes, ratings, runtimes and booking links.</dd>
+
+				<dt>
+					<a
+						href="https://clusterflick.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>Clusterflick</a>
+				</dt>
+				<dd>
+					BFI IMAX listings, used under
+					<a
+						href="https://creativecommons.org/licenses/by/4.0/"
+						target="_blank"
+						rel="noopener noreferrer"
+					>CC BY 4.0</a>.
+				</dd>
 
 				<dt>
 					<a
@@ -140,7 +170,7 @@ useHead({
 		{
 			name: 'description',
 			content:
-				'Screen 1 showtimes for Picturehouse Finsbury Park and Central, the UK box office top 10, plus official studio trailers from the last 30 days.',
+				'Screen 1 showtimes for Picturehouse Finsbury Park and Central, bookable BFI IMAX screenings, the UK box office top 10, plus official studio trailers from the last 30 days.',
 		},
 	],
 });

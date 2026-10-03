@@ -7,6 +7,12 @@
 			Movies
 		</NuxtLink>
 		<NuxtLink
+			to="/imax"
+			class="nav-tab"
+		>
+			IMAX
+		</NuxtLink>
+		<NuxtLink
 			to="/trailers"
 			class="nav-tab"
 		>

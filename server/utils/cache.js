@@ -53,3 +53,6 @@ export const boxOfficeCache = new SimpleCache(360);
 
 // YouTube studio uploads change a few times a day, cache for 1 hour
 export const youtubeCache = new SimpleCache(60);
+
+// Clusterflick republishes BFI IMAX listings once a day, cache for 1 hour
+export const imaxCache = new SimpleCache(60);

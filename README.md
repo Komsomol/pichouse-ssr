@@ -4,7 +4,7 @@
 [![Deploy](https://img.shields.io/badge/Deploy-Cloudflare_Pages-orange?style=flat-square)](https://pichouse-ssr.pages.dev)
 [![Daily Build](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml/badge.svg)](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml)
 
-A statically generated site with three listings tabs - **Movies**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
+A statically generated site with four listings tabs - **Movies**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **IMAX**, showing every bookable screening at BFI IMAX, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
 
 ### 🔗 **[View Live Site → pichouse-ssr.pages.dev](https://pichouse-ssr.pages.dev)**
 
@@ -18,6 +18,13 @@ A statically generated site with three listings tabs - **Movies**, showing Scree
 - 🎟️ **Booking Links** - Direct links to Picturehouse booking
 - 📅 **Smart Filtering** - Weekday evenings (after 6 PM) + all weekend showtimes
 - 🏷️ **Event Screenings Matched** - "Film + Q&A with ..." listings still find the film's poster and trailer
+
+### IMAX tab
+
+- 🎞️ **BFI IMAX Listings** - Every bookable screening at BFI IMAX, Waterloo
+- 🚫 **Sold Out Removed** - Sold-out and past screenings are left out
+- 🎥 **Trailers** - Poster and trailers from TMDb, matched by id
+- 🏷️ **70mm Marked** - IMAX 70mm print screenings are labelled
 
 ### Trailers tab
 
@@ -44,9 +51,9 @@ A statically generated site with three listings tabs - **Movies**, showing Scree
 
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
-- **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
-- **Testing:** Vitest (149 tests)
-- **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped)
+- **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
+- **Testing:** Vitest (159 tests)
+- **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped), Clusterflick (BFI IMAX)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever
 reach the browser and the deployed site is plain static HTML.
@@ -134,15 +141,17 @@ Two GitHub Actions workflows deploy to Cloudflare Pages via Wrangler. See
 
 | Workflow | Triggers | Behaviour |
 | --- | --- | --- |
-| `smart-deploy.yml` | Daily 06:37 UTC, manual | Fingerprints the Picturehouse feed and only rebuilds when it changed |
+| `smart-deploy.yml` | 07:37 + 21:37 UTC, manual | Fingerprints the Picturehouse feed and BFI IMAX listings, and only rebuilds when either changed |
 | `deploy.yml` | Push to `main`, manual | Always rebuilds and deploys |
 
-`smart-deploy.yml` owns the daily schedule; `deploy.yml` covers code changes. It
+`smart-deploy.yml` owns the schedule. Its two runs land just after the two daily
+BFI IMAX data releases from Clusterflick; `deploy.yml` covers code changes. It
 also re-enables itself through the API on each run, because GitHub disables
 scheduled workflows after 60 days without repository activity.
 
-Because the fingerprint only covers the Picturehouse feed, a day with no listing
-changes skips the build and new studio trailers wait for the next one.
+Because the fingerprint only covers Picturehouse and BFI IMAX listings, a run
+with no listing changes skips the build, and new studio trailers wait for the
+next one.
 
 ### Manual Deployment
 
@@ -159,12 +168,13 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 ```
 ├── .github/workflows/     # Daily (smart-deploy) and push (deploy) pipelines
 ├── components/
-│   ├── NavTabs.vue        # Movies / Trailers / Box Office / About tab bar
+│   ├── NavTabs.vue        # Movies / IMAX / Trailers / Box Office / About tab bar
 │   ├── movies/            # Movie list composable, styles, video modal
 │   ├── trailers/          # Trailer list composable and styles
 │   └── boxoffice/         # Box office list composable and styles
 ├── pages/
 │   ├── index.vue          # Movies tab
+│   ├── imax.vue           # IMAX tab
 │   ├── trailers.vue       # Trailers tab
 │   ├── boxoffice.vue      # Box Office tab
 │   └── about.vue          # About tab
@@ -180,7 +190,10 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 │   │   ├── filterTrailers.js   # Trailer filtering, sorting, dedup
 │   │   ├── boxoffice.js        # UK box office top 10 endpoint
 │   │   ├── boxOfficeApi.js     # Box Office Mojo scraper
-│   │   └── filterBoxOffice.js  # Chart parsing (film name, re-release label)
+│   │   ├── filterBoxOffice.js  # Chart parsing (film name, re-release label)
+│   │   ├── imax.js             # BFI IMAX endpoint
+│   │   ├── imaxApi.js          # Clusterflick BFI IMAX data
+│   │   └── filterImax.js       # Sold-out filtering, London-time formatting
 │   └── utils/
 │       ├── constants.js   # Cinema IDs, screening rules, trailer and box office config
 │       ├── channels.js    # Studio YouTube channels
@@ -240,7 +253,16 @@ Grosses are shown as Box Office Mojo reports them, in **US dollars**. The chart
 itself needs no API key; posters, synopses, runtimes, ratings and trailers come
 from TMDb via `TMDB_TOKEN`.
 
+### BFI IMAX
+
+`IMAX_CONFIG` in `server/utils/constants.js` points at Clusterflick's daily
+BFI IMAX release asset. BFI's own booking site blocks automated requests, so
+the build does not read it directly. No API key is needed.
+
 ## Credits
+
+BFI IMAX listings are from [Clusterflick](https://clusterflick.com), used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 The Trailers tab is ported from the
 [Movie-Trailers](https://github.com/Komsomol/Movie-Trailers) project, adapted from

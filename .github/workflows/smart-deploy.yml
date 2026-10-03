@@ -10,7 +10,12 @@ on:
         default: false
         type: boolean
 
-  # Scheduled trigger - daily at 06:37 UTC.
+  # Scheduled trigger - twice daily, 07:37 and 21:37 UTC.
+  #
+  # Timed to land after Clusterflick's two BFI IMAX releases. It has no fixed
+  # schedule - it publishes when its scrape finishes - but over Sep-Oct 2026
+  # mornings landed 05:00-07:06 UTC and evenings 17:00-20:40 UTC. Each run is
+  # still a cheap fingerprint check; it only builds when data changed.
   #
   # Not on the hour. GitHub's schedule event is best-effort: it queues on a
   # shared pool, slips under load, and gets dropped outright when the queue is
@@ -19,7 +24,7 @@ on:
   # then missed 1 Sep entirely. That miss is why the 31 Aug outage was still
   # live the next morning instead of self-healing on the next run.
   schedule:
-    - cron: '37 6 * * *'
+    - cron: '37 7,21 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,6 +35,8 @@ env:
   # Set.prototype.union, which does not exist on Node 20.
   NODE_VERSION: '22'
   DATA_HASH_FILE: '.data-hash'
+  # Same asset server/api/imaxApi.js builds from (IMAX_CONFIG.SOURCE_URL)
+  IMAX_SOURCE_URL: 'https://github.com/clusterflick/data-transformed/releases/latest/download/bfi.org.uk-imax'
 
 jobs:
   check-for-updates:
@@ -119,12 +126,48 @@ jobs:
           echo "Movie count: $MOVIE_COUNT"
           echo "movie_count=$MOVIE_COUNT" >> $GITHUB_OUTPUT
 
-          # Get previous hash from cache or artifact
+          # BFI IMAX listings via Clusterflick's release asset. Fingerprint the
+          # screenings and their sold-out status, so a film selling out - or a
+          # new screening - triggers a deploy even when Picturehouse is unchanged.
+          IMAX_HASH=$(curl -sL "${{ env.IMAX_SOURCE_URL }}" \
+            --max-time 30 --retry 2 --retry-delay 2 --retry-all-errors 2>/dev/null | node -e "
+            const chunks = [];
+            process.stdin.on('data', c => chunks.push(c));
+            process.stdin.on('end', () => {
+              try {
+                const films = JSON.parse(Buffer.concat(chunks).toString());
+                if (!Array.isArray(films) || films.length === 0) throw new Error('empty');
+                const fingerprint = films
+                  .flatMap(f => (f.performances || []).map(p =>
+                    f.showingId + '@' + p.time + ':' + (p.status?.soldOut ? 1 : 0)))
+                  .sort()
+                  .join('|');
+                const crypto = require('crypto');
+                console.log(crypto.createHash('md5').update(fingerprint).digest('hex'));
+              } catch (e) {
+                console.log('error');
+              }
+            });
+          ")
+
+          # The hash file holds two lines: Picturehouse, then BFI IMAX. A file
+          # from before IMAX was added has one line, which reads as an IMAX
+          # change and deploys once.
           OLD_HASH=""
+          OLD_IMAX_HASH=""
           if [ -f "$DATA_HASH_FILE" ]; then
-            OLD_HASH=$(cat "$DATA_HASH_FILE")
+            OLD_HASH=$(sed -n 1p "$DATA_HASH_FILE")
+            OLD_IMAX_HASH=$(sed -n 2p "$DATA_HASH_FILE")
           fi
           echo "Previous hash: $OLD_HASH"
+
+          # A failed IMAX fetch is not a change: keep the last fingerprint, so
+          # it neither forces a build with an empty IMAX tab nor gets recorded
+          if [ "$IMAX_HASH" = "error" ]; then
+            echo "⚠️ Failed to fetch BFI IMAX listings. Treating IMAX as unchanged."
+            IMAX_HASH="$OLD_IMAX_HASH"
+          fi
+          echo "IMAX hash: $IMAX_HASH (previous: $OLD_IMAX_HASH)"
 
           # Check if force deploy
           FORCE="${{ github.event.inputs.force_deploy }}"
@@ -142,19 +185,22 @@ jobs:
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             echo "skip_reason=Picturehouse fetch failed - the current deploy was left in place." >> $GITHUB_OUTPUT
           elif [ "$NEW_HASH" != "$OLD_HASH" ]; then
-            echo "✨ Data has changed! Will deploy."
+            echo "✨ Picturehouse data has changed! Will deploy."
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          elif [ "$IMAX_HASH" != "$OLD_IMAX_HASH" ]; then
+            echo "✨ BFI IMAX listings have changed! Will deploy."
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
             echo "😴 No changes detected. Skipping deploy."
             echo "should_deploy=false" >> $GITHUB_OUTPUT
-            echo "skip_reason=No changes in movie data." >> $GITHUB_OUTPUT
+            echo "skip_reason=No changes in Picturehouse or BFI IMAX data." >> $GITHUB_OUTPUT
           fi
 
           # Save new hash for comparison. A failed fetch is not a data state, so
           # it is never recorded - otherwise two failures in a row compare equal
           # and the outage looks like "no changes".
           if [ "$NEW_HASH" != "error" ]; then
-            echo "$NEW_HASH" > "$DATA_HASH_FILE"
+            printf '%s\n%s\n' "$NEW_HASH" "$IMAX_HASH" > "$DATA_HASH_FILE"
           fi
 
       # Saved unconditionally: on a skipped deploy the hash is unchanged, but
@@ -225,7 +271,7 @@ jobs:
           echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Live URL:** https://pichouse-ssr.pages.dev" >> $GITHUB_STEP_SUMMARY
-          echo "- **Next check:** Tomorrow at 06:37 UTC" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** 07:37 or 21:37 UTC, whichever comes first" >> $GITHUB_STEP_SUMMARY
 
   skip-notification:
     needs: check-for-updates
@@ -239,5 +285,5 @@ jobs:
           echo "${{ needs.check-for-updates.outputs.skip_reason }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Movies in API:** ${{ needs.check-for-updates.outputs.movie_count }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Next check:** Tomorrow at 06:37 UTC" >> $GITHUB_STEP_SUMMARY
+          echo "- **Next check:** 07:37 or 21:37 UTC, whichever comes first" >> $GITHUB_STEP_SUMMARY
 
