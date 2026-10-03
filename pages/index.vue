@@ -69,7 +69,7 @@
 						v-if="movie.videos.length"
 						class="movie-videos"
 					>
-						<h4>Trailers:</h4>
+						<h4>Trailers</h4>
 						<ul>
 							<li
 								v-for="video in movie.videos"
@@ -99,16 +99,25 @@
 
 				<!-- Right column: Info + Showtimes -->
 				<div class="movie-info">
-					<h3 class="movie-title">
+					<h3 class="marquee movie-title">
 						{{ movie._originalTitle || movie.Title }}
 					</h3>
 
-					<div class="movie-details">
-						<p><strong>Overview:</strong> {{ movie.overview }}</p>
-						<p><strong>Runtime:</strong> {{ movie.omdbData?.Runtime || movie.RunTime }} minutes</p>
-						<p><strong>Released:</strong> {{ formatDate(movie.release_date) }}</p>
-						<p><strong>Rating:</strong> {{ movie.Rating }}</p>
-					</div>
+					<ul class="movie-facts">
+						<li
+							v-if="movie.Rating"
+							class="movie-cert"
+							:aria-label="`Certificate ${movie.Rating}`"
+						>
+							{{ movie.Rating }}
+						</li>
+						<li>{{ movie.omdbData?.Runtime || movie.RunTime }} min</li>
+						<li>Released {{ formatDate(movie.release_date) }}</li>
+					</ul>
+
+					<p class="movie-overview">
+						{{ movie.overview }}
+					</p>
 
 					<!-- Screen 1 Showtimes -->
 					<div
@@ -116,10 +125,15 @@
 						class="movie-showtimes"
 					>
 						<div class="showtimes-grid">
-							<div
+							<!-- The whole showtime is the booking link -->
+							<a
 								v-for="showtime in movie.screen1Showtimes"
 								:key="showtime.SessionId"
+								:href="showtime.bookingUrl"
+								target="_blank"
+								rel="noopener noreferrer"
 								class="showtime-card"
+								:aria-label="`Book ${showtime.cinemaName}, ${showtime.date}, ${showtime.time_format}`"
 							>
 								<div class="showtime-cinema">
 									{{ showtime.cinemaName }}
@@ -130,15 +144,7 @@
 								<div class="showtime-time">
 									{{ showtime.time_format }}
 								</div>
-								<a
-									:href="showtime.bookingUrl"
-									target="_blank"
-									rel="noopener noreferrer"
-									class="book-button"
-								>
-									Book Tickets
-								</a>
-							</div>
+							</a>
 						</div>
 					</div>
 				</div>

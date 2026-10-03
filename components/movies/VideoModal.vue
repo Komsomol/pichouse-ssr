@@ -12,7 +12,7 @@
 				class="close-button"
 				@click="closeModal"
 			>
-				X
+				Close
 			</button>
 			<iframe
 				:src="videoUrl"
@@ -58,11 +58,9 @@ watch(() => props.videoKey, (newKey) => {
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9); /* Darker overlay */
+  inset: 0;
+  padding: var(--space-md, 1rem);
+  background: rgba(0, 0, 0, 0.92);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -71,36 +69,43 @@ watch(() => props.videoKey, (newKey) => {
 
 .modal-content {
   position: relative;
-  background: #1c1c1c; /* Dark background */
-  padding: 20px;
-  max-width: 800px;
   width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7); /* Subtle shadow */
+  max-width: 960px;
+  padding-top: 52px;
 }
 
 iframe {
+  display: block;
   width: 100%;
-  height: 450px;
+  height: auto;
+  aspect-ratio: 16 / 9;
   border: none;
-  border-radius: 8px;
+  background: #000;
 }
 
+/* Lightbox-coloured on black, like the screen itself */
 .close-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #ff4444; /* Bright red close button */
-  color: white;
+  top: 0;
+  right: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-md, 1rem);
+  background: #eef0ea;
+  color: #000;
   border: none;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: var(--font-sm, 0.875rem);
+  font-weight: 600;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 5px 10px;
-  border-radius: 5px;
-  transition: background 0.3s ease;
 }
 
 .close-button:hover {
-  background: #ff0000; /* Darker red on hover */
+  background: #fff;
+}
+
+.close-button:focus-visible {
+  outline: 2px solid #2fd07a;
+  outline-offset: 2px;
 }
 </style>

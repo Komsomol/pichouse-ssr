@@ -1,6 +1,8 @@
 /* =============================================================================
    STUDIO TRAILERS
-   Uses the design tokens defined in MovieListStyles.css
+   Uses the tokens in MovieListStyles.css. Trailer names are YouTube video
+   names rather than film titles, so they stay in the body face - the marquee
+   is kept for films.
    ============================================================================= */
 
 /* Studio filter */
@@ -12,160 +14,115 @@
 }
 
 .trailer-filter label {
-  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: var(--font-sm);
-  font-weight: 500;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--letter);
 }
 
 .trailer-filter select {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: var(--font-sm);
-  color: var(--text-primary);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-base);
+  color: var(--letter);
+  background: var(--lightbox);
+  border: 1.5px solid var(--letter);
+  border-radius: 0;
   padding: var(--space-sm) var(--space-md);
   min-height: 44px;
   width: 100%;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.trailer-filter select:hover {
-  border-color: var(--accent);
-}
-
-.trailer-filter select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Grid - single column on mobile */
 .trailer-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-md);
+  gap: var(--space-xl) var(--space-lg);
 }
 
-/* [8] Trailer Card - matches the movie card treatment */
 .trailer-card {
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px var(--shadow-light);
-  overflow: hidden;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
-.trailer-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px var(--shadow-accent);
-}
-
-.trailer-card:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--shadow-accent);
-}
-
-/* Thumbnail doubles as the play button */
+/* Thumbnail doubles as the play link */
 .trailer-thumb {
   position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  padding: 0;
-  border: none;
-  background: var(--bg-secondary);
-  cursor: pointer;
+  background: var(--lightbox-deep);
   overflow: hidden;
 }
 
 .trailer-thumb img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  transition: transform var(--transition-base);
 }
 
-.trailer-thumb:hover img {
-  transform: scale(1.03);
-}
-
-.trailer-thumb:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-
-/* [6] Play affordance */
+/* Play mark, bottom-left like a player control rather than over the faces */
 .trailer-play {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  left: var(--space-sm);
+  bottom: var(--space-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--accent);
-  color: white;
-  font-size: var(--font-lg);
+  background: var(--exit);
+  color: var(--on-exit);
+  font-size: var(--font-sm);
   line-height: 1;
-  padding-left: 4px; /* optically centre the triangle */
-  box-shadow: 0 2px 12px var(--shadow-accent);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  padding-left: 3px; /* optically centre the triangle */
+  transition: background-color var(--transition-fast);
 }
 
 .trailer-thumb:hover .trailer-play {
-  background: var(--accent-hover);
-  transform: translate(-50%, -50%) scale(1.08);
+  background: var(--exit-hover);
 }
 
-/* Card text */
+.trailer-thumb:focus-visible {
+  outline-offset: 2px;
+}
+
 .trailer-body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space-md);
+  gap: 0.15rem;
+  padding-top: var(--space-xs);
+  border-top: var(--rail-weight) solid var(--rail);
 }
 
-/* [4] Trailer Title - DM Serif Display, like movie titles */
 .trailer-title {
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: var(--font-md);
-  font-weight: 400;
-  line-height: 1.3;
+  font-size: var(--font-base);
+  font-weight: 600;
+  line-height: 1.35;
   margin: 0;
-  color: var(--text-primary);
+  color: var(--letter);
 }
 
-/* [5] Studio name - muted, medium weight */
 .trailer-studio {
   margin: 0;
   font-size: var(--font-sm);
-  font-weight: 500;
-  color: var(--text-muted);
+  color: var(--letter);
 }
 
-.trailer-also {
-  font-weight: 400;
-  color: var(--text-subtle);
+.trailer-also,
+.trailer-date {
+  color: var(--letter-soft);
 }
 
 .trailer-date {
   margin: 0;
   font-size: var(--font-xs);
-  color: var(--text-subtle);
 }
 
 .trailer-empty {
-  padding: var(--space-xl) var(--space-lg);
-  text-align: center;
-  color: var(--text-muted);
+  padding: var(--space-xl) 0;
+  max-width: 65ch;
   font-size: var(--font-md);
 }
 
@@ -181,12 +138,11 @@
 
   .trailer-filter select {
     width: auto;
-    min-width: 260px;
+    min-width: 280px;
   }
 
   .trailer-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-lg);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -195,20 +151,6 @@
    ============================================================================= */
 @media (min-width: 900px) {
   .trailer-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* =============================================================================
-   REDUCED MOTION
-   ============================================================================= */
-@media (prefers-reduced-motion: reduce) {
-  .trailer-thumb:hover img,
-  .trailer-thumb:hover .trailer-play {
-    transform: none;
-  }
-
-  .trailer-thumb:hover .trailer-play {
-    transform: translate(-50%, -50%);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

@@ -63,49 +63,23 @@
 					>
 				</div>
 
-				<div class="boxoffice-body">
-					<h2 class="boxoffice-title">
-						{{ film.title }}
-					</h2>
-
-					<p class="boxoffice-meta">
-						{{ metaLine(film) }}
-					</p>
-
-					<dl class="boxoffice-grosses">
-						<div class="boxoffice-gross">
-							<dt>Weekend</dt>
-							<dd>{{ film.weekendGross }}</dd>
-						</div>
-						<div
-							v-if="formatValue(film.totalGross)"
-							class="boxoffice-gross"
-						>
-							<dt>Total</dt>
-							<dd>{{ film.totalGross }}</dd>
-						</div>
-					</dl>
-
-					<p
-						v-if="formatValue(film.plot)"
-						class="boxoffice-plot"
-					>
-						{{ film.plot }}
-					</p>
-
-					<!-- Studio trailer plays in the modal; otherwise a YouTube search -->
+				<!-- Under the poster, as on the Movies tab. Studio trailer plays in
+				the modal (real href, so middle/Cmd/Ctrl-click opens YouTube);
+				otherwise a YouTube search -->
+				<div class="boxoffice-videos">
 					<template
 						v-for="video in film.videos"
 						:key="video.key || video.searchUrl"
 					>
-						<button
+						<a
 							v-if="video.key && !video.isSearch"
 							class="boxoffice-trailer"
+							:href="`https://www.youtube.com/watch?v=${video.key}`"
+							target="_blank"
+							rel="noopener noreferrer"
 							:aria-label="`Play the trailer for ${film.title}`"
-							@click="openModal(video.key)"
-						>
-							▶ Watch trailer
-						</button>
+							@click.exact.prevent="openModal(video.key)"
+						>▶ Watch trailer</a>
 						<a
 							v-else-if="video.searchUrl"
 							class="boxoffice-trailer"
@@ -114,6 +88,39 @@
 							rel="noopener noreferrer"
 						>🔍 Search for a trailer</a>
 					</template>
+				</div>
+
+				<div class="boxoffice-body">
+					<h2 class="marquee boxoffice-title">
+						{{ film.title }}
+					</h2>
+
+					<div class="boxoffice-details">
+						<p class="boxoffice-meta">
+							{{ metaLine(film) }}
+						</p>
+
+						<dl class="boxoffice-grosses">
+							<div class="boxoffice-gross">
+								<dt>Weekend</dt>
+								<dd>{{ film.weekendGross }}</dd>
+							</div>
+							<div
+								v-if="formatValue(film.totalGross)"
+								class="boxoffice-gross"
+							>
+								<dt>Total</dt>
+								<dd>{{ film.totalGross }}</dd>
+							</div>
+						</dl>
+
+						<p
+							v-if="formatValue(film.plot)"
+							class="boxoffice-plot"
+						>
+							{{ film.plot }}
+						</p>
+					</div>
 				</div>
 			</article>
 		</div>

@@ -152,25 +152,22 @@ useHead({
 
 <style scoped>
 .about-section {
-  margin-bottom: var(--space-xl);
+  max-width: 65ch;
+  margin-bottom: var(--space-2xl);
 }
 
 .about-section h2 {
-  font-family: 'DM Serif Display', Georgia, serif;
+  margin: 0 0 var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 4px solid var(--letter);
   font-size: var(--font-lg);
-  font-weight: 400;
-  color: var(--text-primary);
-  margin: 0 0 var(--space-sm);
-  padding-bottom: var(--space-xs);
-  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--letter);
 }
 
 .about-section p {
   margin: 0 0 var(--space-md);
-  font-size: var(--font-base);
-  line-height: 1.7;
-  color: var(--text-secondary);
-  max-width: 65ch;
+  line-height: 1.65;
 }
 
 .about-section p:last-child {
@@ -178,64 +175,54 @@ useHead({
 }
 
 .about-section strong {
-  color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .about-section a {
-  color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
+  text-underline-offset: 3px;
 }
 
 .about-section a:hover {
-  color: var(--accent-hover);
+  color: var(--exit-hover);
 }
 
-.about-section a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Data sources */
+/* Data sources: name on the left, what it supplies on the right */
 .about-sources {
-  margin: 0 0 var(--space-md);
-  padding: var(--space-md);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--accent);
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0 0 var(--space-lg);
 }
 
 .about-sources dt {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: var(--font-sm);
-  color: var(--text-primary);
+  padding-top: var(--space-sm);
+  border-top: var(--rail-weight) solid var(--rail);
+  font-size: var(--font-base);
 }
 
 .about-sources dd {
   margin: 0 0 var(--space-sm);
-  font-size: var(--font-sm);
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-
-.about-sources dd:last-child {
-  margin-bottom: 0;
+  color: var(--letter-soft);
 }
 
 .about-note {
-  font-size: var(--font-xs) !important;
-  color: var(--text-subtle) !important;
-  line-height: 1.6 !important;
+  font-size: var(--font-sm);
+  color: var(--letter-soft);
 }
 
 @media (min-width: 600px) {
   .about-sources {
-    padding: var(--space-lg);
+    grid-template-columns: 11rem 1fr;
+  }
+
+  .about-sources dd {
+    margin: 0;
+    padding: var(--space-sm) 0;
+    border-top: var(--rail-weight) solid var(--rail);
   }
 
   .about-sources dt {
-    font-size: var(--font-base);
+    padding-bottom: var(--space-sm);
   }
 }
 </style>

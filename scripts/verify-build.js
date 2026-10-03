@@ -9,7 +9,7 @@
  * what happened on 31 Aug 2026, when Picturehouse returned a 504 then a 502 and
  * the live site was replaced with "Failed to load movies".
  *
- * This asserts the generated Cinema tab actually holds listings.
+ * This asserts the generated Movies tab actually holds listings.
  */
 
 /* eslint-disable no-console */
@@ -30,16 +30,16 @@ const html = readFileSync(indexHtml, 'utf8');
 const movieCount = html.split(MOVIE_MARKER).length - 1;
 
 if (html.includes(ERROR_MARKER)) {
-	console.error('\n❌ Build verification failed: the Cinema tab rendered its error state.\n');
+	console.error('\n❌ Build verification failed: the Movies tab rendered its error state.\n');
 	console.error('   The generated site would show an error instead of listings, so this');
 	console.error('   build must not be deployed. Check the Picturehouse fetch above.\n');
 	process.exit(1);
 }
 
 if (movieCount === 0) {
-	console.error('\n❌ Build verification failed: the Cinema tab has no listings.\n');
+	console.error('\n❌ Build verification failed: the Movies tab has no listings.\n');
 	console.error(`   Expected at least one "${MOVIE_MARKER}" in ${indexHtml}.\n`);
 	process.exit(1);
 }
 
-console.log(`\n✅ Build verified: ${movieCount} movies on the Cinema tab.\n`);
+console.log(`\n✅ Build verified: ${movieCount} movies on the Movies tab.\n`);

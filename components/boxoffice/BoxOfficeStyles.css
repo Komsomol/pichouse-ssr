@@ -1,195 +1,184 @@
 /* =============================================================================
    UK BOX OFFICE TOP 10
-   Builds on the design system in MovieListStyles.css
+   Uses the tokens and the .marquee title in MovieListStyles.css. Ranks are set
+   as letterboard numerals: the chart position is the point of the page.
    ============================================================================= */
 
-/* Source and currency note under the page title */
+/* Source and currency note */
 .boxoffice-note {
-  margin: calc(var(--space-lg) * -1 + var(--space-xs)) 0 var(--space-lg);
+  margin: 0 0 var(--space-xl);
+  max-width: 65ch;
   font-size: var(--font-sm);
-  color: var(--text-muted);
-  text-align: center;
+  color: var(--letter-soft);
 }
 
 .boxoffice-note a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.boxoffice-note a:hover {
-  text-decoration: underline;
+  font-weight: 600;
+  text-underline-offset: 3px;
 }
 
 .boxoffice-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
 }
 
-/* [8] Chart Card - matches the movie and trailer card treatment */
 .boxoffice-card {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 3.2rem 96px minmax(0, 1fr);
   grid-template-areas:
-    'rank poster'
-    'body body';
+    'rank poster title'
+    'body body body'
+    'videos videos videos';
+  align-items: start;
   gap: var(--space-md);
-  padding: var(--space-md);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px var(--shadow-light);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  padding: var(--space-lg) 0 var(--space-xl);
+  border-top: 4px solid var(--letter);
 }
 
-.boxoffice-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px var(--shadow-accent);
-}
-
-.boxoffice-card:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--shadow-accent);
+.boxoffice-card:first-child {
+  border-top: none;
+  padding-top: 0;
 }
 
 .boxoffice-rank {
   grid-area: rank;
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: var(--font-3xl);
-  line-height: 1;
-  color: var(--accent);
-  min-width: 2ch;
-  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--font-4xl);
+  font-weight: 800;
+  line-height: 0.85;
+  color: var(--letter);
+  font-variant-numeric: tabular-nums;
 }
 
-/* Fixed width and ratio so the column is reserved before the poster loads,
-   rather than the copy reflowing as each image arrives */
+/* Fixed width and ratio so the column is reserved before the poster loads */
 .boxoffice-poster {
   grid-area: poster;
-  width: 120px;
+  width: 96px;
   aspect-ratio: 2 / 3;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  background: var(--lightbox-deep);
 }
 
 .boxoffice-poster img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
 }
 
+/* .boxoffice-body is display:contents on phones so the title can sit beside
+   the poster while the rest of the copy runs full width beneath */
 .boxoffice-body {
-  grid-area: body;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
+  display: contents;
 }
 
 .boxoffice-title {
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: var(--font-xl);
-  font-weight: 400;
-  margin: 0;
-  color: var(--text-primary);
-  line-height: 1.3;
+  grid-area: title;
+  font-size: var(--font-2xl);
+}
+
+.boxoffice-details {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
 }
 
 .boxoffice-meta {
   margin: 0;
   font-size: var(--font-sm);
-  color: var(--text-muted);
+  color: var(--letter-soft);
 }
 
 /* Weekend and running totals */
 .boxoffice-grosses {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-md);
+  gap: var(--space-xl);
   margin: 0;
-  padding: var(--space-sm) 0 0;
-  border-top: 1px solid var(--border-color);
 }
 
 .boxoffice-gross {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
 }
 
 .boxoffice-gross dt {
   font-size: var(--font-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-subtle);
+  color: var(--letter-soft);
 }
 
 .boxoffice-gross dd {
   margin: 0;
-  font-size: var(--font-md);
+  font-family: var(--font-display);
+  font-size: var(--font-xl);
   font-weight: 700;
-  color: var(--text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .boxoffice-plot {
   margin: 0;
-  font-size: var(--font-sm);
-  color: var(--text-secondary);
+  max-width: 65ch;
 }
 
-/* Trailer link, styled like the Cinema tab's video links */
+.boxoffice-videos {
+  grid-area: videos;
+}
+
 .boxoffice-trailer {
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
   min-height: 44px;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--exit);
   font-family: inherit;
   font-size: var(--font-sm);
-  font-weight: 500;
-  text-align: left;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .boxoffice-trailer:hover {
-  background: var(--bg-card);
-  border-color: var(--accent);
-}
-
-.boxoffice-trailer:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  color: var(--exit-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .boxoffice-empty {
-  padding: var(--space-xl) var(--space-md);
-  text-align: center;
-  color: var(--text-muted);
+  padding: var(--space-xl) 0;
+  max-width: 65ch;
 }
 
 /* =============================================================================
-   TABLET (600px+) - poster and copy sit side by side
+   TABLET (600px+) - rank, poster and copy side by side
    ============================================================================= */
 @media (min-width: 600px) {
   .boxoffice-card {
-    grid-template-columns: auto auto 1fr;
-    grid-template-areas: 'rank poster body';
-    align-items: start;
-    gap: var(--space-lg);
+    grid-template-columns: 4.5rem 140px minmax(0, 1fr);
+    /* Poster spans the title and the top of the copy; the trailer link sits
+       directly beneath it while the copy carries on to the right */
+    grid-template-areas:
+      'rank poster title'
+      'rank poster body'
+      'rank videos body';
+    grid-template-rows: auto auto 1fr;
+    row-gap: var(--space-sm);
+    column-gap: var(--space-lg);
+  }
+
+  .boxoffice-rank {
+    font-size: 4.768rem;
   }
 
   .boxoffice-poster {
     width: 140px;
   }
 
-  .boxoffice-grosses {
-    gap: var(--space-xl);
+  .boxoffice-title {
+    font-size: var(--font-3xl);
   }
 }
