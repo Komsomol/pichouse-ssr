@@ -56,10 +56,15 @@
 					:key="trailer.link"
 					class="trailer-card"
 				>
-					<button
+					<!-- Real href so middle/Cmd/Ctrl-click opens YouTube in a new tab;
+					a plain left click is intercepted for the modal -->
+					<a
 						class="trailer-thumb"
+						:href="`https://www.youtube.com/watch?v=${trailer.link}`"
+						target="_blank"
+						rel="noopener noreferrer"
 						:aria-label="`Play ${trailer.name}`"
-						@click="openModal(trailer.link)"
+						@click.exact.prevent="openModal(trailer.link)"
 					>
 						<img
 							v-if="trailer.thumbnail"
@@ -70,7 +75,7 @@
 							decoding="async"
 						>
 						<span class="trailer-play">▶</span>
-					</button>
+					</a>
 
 					<div class="trailer-body">
 						<h3 class="trailer-title">
