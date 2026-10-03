@@ -13,6 +13,12 @@
 			IMAX
 		</NuxtLink>
 		<NuxtLink
+			to="/whats-on"
+			class="nav-tab"
+		>
+			What's on
+		</NuxtLink>
+		<NuxtLink
 			to="/trailers"
 			class="nav-tab"
 		>

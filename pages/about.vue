@@ -34,6 +34,15 @@
 		</section>
 
 		<section class="about-section">
+			<h2>The What's on tab</h2>
+			<p>
+				Every film at Screen 1 and BFI IMAX, once each, with a summary and a
+				trailer for the ones you don't know yet. Each venue gets a button for
+				its next screening; films starting later are listed under Coming soon.
+			</p>
+		</section>
+
+		<section class="about-section">
 			<h2>The Trailers tab</h2>
 			<p>
 				Official trailers posted by film studios to YouTube in the

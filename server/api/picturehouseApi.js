@@ -62,16 +62,13 @@ const postWithRetry = async (url, body, headers, attempt = 1) => {
 	}
 };
 
-// Main fetch function with functional composition
-export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
-	const cacheKey = `picturehouse:movies:${cinemaId}`;
+// Requests still running, by cache key. Prerendering builds every page at
+// once, so the Movies and What's on pages ask for the feed within the same
+// second - before the first answer has reached the cache. Without this each
+// fired its own 10-17s POST at a gateway that already struggles with one.
+const inFlight = new Map();
 
-	// Check cache first (cinema data changes infrequently)
-	const cachedMovies = picturehouseCache.get(cacheKey);
-	if (cachedMovies) {
-		return cachedMovies;
-	}
-
+const requestMovies = async (cinemaId, cacheKey) => {
 	const headers = createHeaders(COOKIE);
 	const url = createApiUrl(cinemaId);
 	const requestBody = new URLSearchParams();
@@ -92,4 +89,25 @@ export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
 		console.error('Error fetching from Picturehouse API:', error.message);
 		throw new Error(`Failed to fetch movies from Picturehouse API: ${error.message}`, { cause: error });
 	}
+};
+
+// Main fetch function with functional composition
+export const fetchMoviesFromPicturehouse = async (cinemaId = CINEMA_ID) => {
+	const cacheKey = `picturehouse:movies:${cinemaId}`;
+
+	// Check cache first (cinema data changes infrequently)
+	const cachedMovies = picturehouseCache.get(cacheKey);
+	if (cachedMovies) {
+		return cachedMovies;
+	}
+
+	// Join a request already running rather than starting a second one
+	if (!inFlight.has(cacheKey)) {
+		inFlight.set(
+			cacheKey,
+			requestMovies(cinemaId, cacheKey).finally(() => inFlight.delete(cacheKey)),
+		);
+	}
+
+	return inFlight.get(cacheKey);
 };

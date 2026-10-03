@@ -4,7 +4,7 @@
 [![Deploy](https://img.shields.io/badge/Deploy-Cloudflare_Pages-orange?style=flat-square)](https://pichouse-ssr.pages.dev)
 [![Daily Build](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml/badge.svg)](https://github.com/Komsomol/pichouse-ssr/actions/workflows/smart-deploy.yml)
 
-A statically generated site with four listings tabs - **Movies**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **IMAX**, showing every bookable screening at BFI IMAX, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
+A statically generated site with five listings tabs - **Movies**, showing Screen 1 showtimes for Picturehouse Finsbury Park & Picturehouse Central, **IMAX**, showing every bookable screening at BFI IMAX, **What's on**, every film from both once with its trailer, summary and booking, **Trailers**, showing official trailers released by film studios in the last 30 days, and **Box Office**, showing the UK weekend top 10 - plus an **About** page.
 
 ### 🔗 **[View Live Site → pichouse-ssr.pages.dev](https://pichouse-ssr.pages.dev)**
 
@@ -25,6 +25,13 @@ A statically generated site with four listings tabs - **Movies**, showing Screen
 - 🚫 **Sold Out Removed** - Sold-out and past screenings are left out
 - 🎥 **Trailers** - Poster and trailers from TMDb, matched by id
 - 🏷️ **70mm Marked** - IMAX 70mm print screenings are labelled
+
+### What's on tab
+
+- 🎬 **Every Film Once** - Screen 1 and BFI IMAX films merged, one entry each
+- 📝 **Know What It Is** - Poster, summary, certificate, runtime and a trailer
+- 🎟️ **Book Per Venue** - Next screening at each venue, plus a link to all times
+- 🗓️ **Now and Coming Soon** - This week's films first, later ones below
 
 ### Trailers tab
 
@@ -52,7 +59,7 @@ A statically generated site with four listings tabs - **Movies**, showing Screen
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
-- **Testing:** Vitest (159 tests)
+- **Testing:** Vitest (177 tests)
 - **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped), Clusterflick (BFI IMAX)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever
@@ -168,13 +175,14 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 ```
 ├── .github/workflows/     # Daily (smart-deploy) and push (deploy) pipelines
 ├── components/
-│   ├── NavTabs.vue        # Movies / IMAX / Trailers / Box Office / About tab bar
+│   ├── NavTabs.vue        # Movies / IMAX / What's on / Trailers / Box Office / About
 │   ├── movies/            # Movie list composable, styles, video modal
 │   ├── trailers/          # Trailer list composable and styles
 │   └── boxoffice/         # Box office list composable and styles
 ├── pages/
 │   ├── index.vue          # Movies tab
 │   ├── imax.vue           # IMAX tab
+│   ├── whats-on.vue       # What's on tab
 │   ├── trailers.vue       # Trailers tab
 │   ├── boxoffice.vue      # Box Office tab
 │   └── about.vue          # About tab
@@ -193,7 +201,9 @@ Or trigger manually in GitHub Actions → "Deploy to Cloudflare Pages" → "Run 
 │   │   ├── filterBoxOffice.js  # Chart parsing (film name, re-release label)
 │   │   ├── imax.js             # BFI IMAX endpoint
 │   │   ├── imaxApi.js          # Clusterflick BFI IMAX data
-│   │   └── filterImax.js       # Sold-out filtering, London-time formatting
+│   │   ├── filterImax.js       # Sold-out filtering, London-time formatting
+│   │   ├── whatson.js          # What's on endpoint (from Movies + IMAX)
+│   │   └── filterWhatsOn.js    # Per-film merging, now / coming soon
 │   └── utils/
 │       ├── constants.js   # Cinema IDs, screening rules, trailer and box office config
 │       ├── channels.js    # Studio YouTube channels

@@ -2,10 +2,11 @@
 
 ## Overview
 
-Nuxt 3 static site with five tabs:
+Nuxt 3 static site with six tabs:
 
 - **Movies** (`/`) - movies on **Screen 1** at Finsbury Park and Picturehouse Central, filtered to **weekday evenings (after 6 PM)** and **all weekend times**, with booking links and trailers.
 - **IMAX** (`/imax`) - every bookable screening at **BFI IMAX**, Waterloo, sold-out and past screenings removed. Data via Clusterflick (see BFI IMAX).
+- **What's on** (`/whats-on`) - every Screen 1 and IMAX film once, with poster, summary, trailer and a Book button per venue; playing this week first, coming soon below.
 - **Trailers** (`/trailers`) - official studio trailers from YouTube, last 30 days, filterable by studio.
 - **Box Office** (`/boxoffice`) - the UK weekend top 10 scraped from Box Office Mojo, enriched with TMDb metadata and trailers.
 - **About** (`/about`) - what the site is, how it updates, data sources and attribution.
@@ -23,7 +24,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (159 tests)
+- **Testing:** Vitest + happy-dom (177 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -56,6 +57,10 @@ GitHub Actions (smart-deploy, 07:37 + 21:37 UTC)
     │     ├── Drop sold-out / past performances and films left with none
     │     └── Poster + trailers from TMDb by id [5 concurrent]
     │
+    ├── /server/api/whatson.js
+    │     ├── $fetch /api/movies + /api/imax (same process, caches hit)
+    │     └── Merge listings per film → playing this week / coming soon
+    │
     ├── /server/api/trailers.js
     │     ├── 50 studio channels, uploads playlist derived UC→UU [8 concurrent]
     │     ├── Filter: keyword, 30-day window, release-year, excluded terms
@@ -80,7 +85,7 @@ so `movies.js` drops `show_times`, `movie_times` and `_screen1Showtimes` in its
 final map. That took the payload from 656KB to 54KB. A new field the page needs
 must be added to what survives, not by passing the whole feed object through.
 
-**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all five
+**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all six
 routes under `nitro.prerender.routes`. Link crawling only discovers the other
 tabs once `/` has rendered, and `/` waits on a Picturehouse request that takes
 10-17s, so the Trailers and Box Office work used to queue behind it. Declared,
@@ -107,6 +112,9 @@ Do not remove the list.
 | `/server/api/imaxApi.js` | Fetches Clusterflick's BFI IMAX JSON |
 | `/server/api/filterImax.js` | Sold-out/past filtering, London-time formatting |
 | `/pages/imax.vue` | IMAX tab (reuses the Movies tab's layout classes) |
+| `/server/api/whatson.js` | What's on orchestrator (reuses the Movies and IMAX endpoints) |
+| `/server/api/filterWhatsOn.js` | London-time keys, per-film merging, now/soon split |
+| `/pages/whats-on.vue` | What's on tab |
 | `/server/utils/channels.js` | 50 studio YouTube channels |
 | `/server/utils/helpers.js` | Pure utilities incl. `normalizeTitleKey` (shared comparison key) |
 | `/server/utils/cache.js` | TTL-based caches |
@@ -239,6 +247,33 @@ is a licence requirement**, not decoration. Keep both.
   fetch keeps the previous fingerprint - it never forces a build with an empty
   tab. The hash cache file holds two lines: Picturehouse, then IMAX.
 
+## What's on
+
+Every film at Screen 1 or BFI IMAX, **once each**: poster, summary, one
+trailer, certificate and runtime, then a line per venue with a Book button for
+the next screening and a link to that venue's tab for the rest. "Playing this
+week" (a screening within 7 days) comes first; "Coming soon" sits below.
+Asked for by users who wanted to see what is on - including films they don't
+know - without reading every showtime. A first attempt as a time grid (one line
+per film per day) was rejected for exactly that reason; don't bring it back.
+
+- **Built from the other endpoints, not the sources.** `whatson.js` calls
+  `$fetch('/api/movies')` and `$fetch('/api/imax')`. That costs no extra
+  upstream requests only because the fetchers share in-flight requests - see
+  the gotcha below.
+- **One entry per film across venues.** Listings merge on
+  `normalizeTitleKey(cleanTitleForSearch(title))`, so "The Odyssey (70mm)" and
+  "The Odyssey", or two apostrophe styles of "Ken Russell's The Devils", are one
+  film. The entry shows the shortest listing title; a venue line whose listing
+  title differs shows it ("as …"), so event and format markers are kept.
+- **Everything is compared as London wall-clock keys** (`2026-10-03T19:30`).
+  Picturehouse's `Showtime` is already London local with no zone - never pass
+  it through `new Date()`, which on a UTC build machine reads it as UTC.
+  IMAX epoch times go through `londonKey()`.
+- **On phones**, `.movie-info` is `display: contents`, so `.whatson-venues`
+  takes the shared grid's `times` area - without it the venue lines land in
+  the 96px poster column.
+
 ## Box office titles
 
 Mojo's release cell is a link holding the film's name plus a span holding any
@@ -358,10 +393,12 @@ reason to move.
 
 Test files:
 - `server/api/__tests__/picturehouseApi.test.js`
+- `server/api/__tests__/imaxApi.test.js`
 - `server/api/__tests__/filterMovies.test.js`
 - `server/api/__tests__/filterTrailers.test.js`
 - `server/api/__tests__/filterBoxOffice.test.js`
 - `server/api/__tests__/filterImax.test.js`
+- `server/api/__tests__/filterWhatsOn.test.js`
 - `server/api/__tests__/tmdbApi.test.js`
 - `server/utils/__tests__/cache.test.js`
 - `server/utils/__tests__/helpers.test.js`
@@ -449,6 +486,13 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
 - **The smart-deploy fingerprint covers Picturehouse and BFI IMAX only.** New
   studio trailers and a new box office weekend will not trigger a rebuild on
   their own.
+- **Prerendering builds every route at once, so the TTL caches do not stop
+  duplicate requests.** A cache only fills when a request finishes; the Movies
+  and What's on pages both asked for the Picturehouse feed in the same second
+  and fired two 10-17s POSTs (and two IMAX downloads). `fetchMoviesFromPicturehouse`
+  and `fetchImaxListings` now keep the running request and hand it to any
+  caller that arrives meanwhile - one POST per build, tested. Any new fetcher
+  that more than one route uses needs the same.
 - **`nuxt generate` refuses to run while the dev server is up** ("Another Nuxt
   dev is already running") and exits without building. `verify-build` then
   checks the *previous* `.output` and passes. Stop the dev server before a local

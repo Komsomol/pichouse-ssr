@@ -101,4 +101,24 @@ describe('fetchMoviesFromPicturehouse', () => {
 
 		await expect(runWithTimers(fetchMoviesFromPicturehouse('029'))).rejects.toThrow(/Invalid response/);
 	});
+
+	it('shares one request between callers that arrive while it is running', async () => {
+		// Prerendering asks for the feed from two pages at once
+		vi.mocked(axios.post).mockResolvedValue(okResponse);
+
+		const [first, second] = await runWithTimers(
+			Promise.all([fetchMoviesFromPicturehouse('029'), fetchMoviesFromPicturehouse('029')]),
+		);
+
+		expect(axios.post).toHaveBeenCalledTimes(1);
+		expect(second).toBe(first);
+	});
+
+	it('lets a later call retry after a shared request failed', async () => {
+		vi.mocked(axios.post).mockRejectedValueOnce(gatewayError(403)).mockResolvedValue(okResponse);
+
+		await expect(runWithTimers(fetchMoviesFromPicturehouse('029'))).rejects.toThrow(/403/);
+		await expect(runWithTimers(fetchMoviesFromPicturehouse('029'))).resolves.toEqual(okResponse.data.movies);
+		expect(axios.post).toHaveBeenCalledTimes(2);
+	});
 });
