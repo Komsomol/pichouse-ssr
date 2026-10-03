@@ -32,11 +32,16 @@ const formatRating = voteAverage =>
  * gets a playable video rather than a search link. A film TMDb cannot match
  * still renders - it just falls back to a YouTube search.
  *
- * @param {object} film - Box office chart entry
+ * @param {object} chartFilm - Box office chart entry
  * @returns {Promise<object>} Chart entry with metadata and videos
  */
-const enrichFilm = async (film) => {
-	const movie = await fetchMovieFromTMDb(film.title);
+const enrichFilm = async (chartFilm) => {
+	const movie = await fetchMovieFromTMDb(chartFilm.title);
+	const film = {
+		...chartFilm,
+		title: BOX_OFFICE_CONFIG.TITLE_ALIASES[`${chartFilm.title} (${chartFilm.label})`]
+			|| chartFilm.title,
+	};
 
 	if (!movie) {
 		console.warn(`  ⚠ [Box Office] No TMDb match for "${film.title}"`);

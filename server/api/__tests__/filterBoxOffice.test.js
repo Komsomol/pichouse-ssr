@@ -70,12 +70,28 @@ describe('parseWeekendChart', () => {
 			{
 				rank: 1,
 				title: 'Spider-Man: Brand New Day',
+				label: '',
 				weekendGross: '$11,227,500',
 				totalGross: '$99,287,459',
 				weeks: '3',
 				distributor: 'Sony Pictures Releasing',
 			},
 		]);
+	});
+
+	it('separates a re-release label from the film\'s name', () => {
+		// Real Mojo markup: the label sits in a span right after the link, with
+		// no whitespace between them
+		const html = makeChartHtml([
+			{
+				rank: 1,
+				title: 'Avengers: Endgame</a><div class="a-section a-spacing-none"><span class="a-size-small a-color-secondary">2026 Re-release</span></div><a>',
+			},
+		]);
+
+		const [film] = parseWeekendChart(html);
+		expect(film.title).toBe('Avengers: Endgame');
+		expect(film.label).toBe('2026 Re-release');
 	});
 
 	it('caps the chart at the top 10 and orders by rank', () => {

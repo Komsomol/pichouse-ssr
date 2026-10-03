@@ -1,6 +1,9 @@
 <template>
 	<div class="container">
-		<h1>Studio Trailers</h1>
+		<!-- The tab names the page; the heading stays for screen readers only -->
+		<h1 class="visually-hidden">
+			Studio Trailers
+		</h1>
 
 		<!-- Loading state -->
 		<div

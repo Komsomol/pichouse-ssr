@@ -1,6 +1,9 @@
 <template>
 	<div class="container">
-		<h1>Screen 1</h1>
+		<!-- The tab names the page; the heading stays for screen readers only -->
+		<h1 class="visually-hidden">
+			Screen 1
+		</h1>
 
 		<!-- Pagination Controls at the top (only show if more than 10 movies) -->
 		<div

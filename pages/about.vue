@@ -1,6 +1,9 @@
 <template>
 	<div class="container">
-		<h1>About</h1>
+		<!-- The tab names the page; the heading stays for screen readers only -->
+		<h1 class="visually-hidden">
+			About
+		</h1>
 
 		<section class="about-section">
 			<h2>What this is</h2>
@@ -62,19 +65,49 @@
 		<section class="about-section">
 			<h2>Where the data comes from</h2>
 			<dl class="about-sources">
-				<dt>Picturehouse</dt>
+				<dt>
+					<a
+						href="https://www.picturehouses.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>Picturehouse</a>
+				</dt>
 				<dd>Showtimes, ratings, runtimes and booking links.</dd>
 
-				<dt>TMDb</dt>
+				<dt>
+					<a
+						href="https://www.themoviedb.org"
+						target="_blank"
+						rel="noopener noreferrer"
+					>TMDb</a>
+				</dt>
 				<dd>Film posters, synopses, runtimes, ratings and trailers.</dd>
 
-				<dt>OMDb</dt>
+				<dt>
+					<a
+						href="https://www.omdbapi.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>OMDb</a>
+				</dt>
 				<dd>Fallback trailer lookup when TMDb has none.</dd>
 
-				<dt>Box Office Mojo</dt>
+				<dt>
+					<a
+						href="https://www.boxofficemojo.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>Box Office Mojo</a>
+				</dt>
 				<dd>The UK weekend top 10 and its gross figures.</dd>
 
-				<dt>YouTube</dt>
+				<dt>
+					<a
+						href="https://www.youtube.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>YouTube</a>
+				</dt>
 				<dd>Studio channel uploads behind the Trailers tab.</dd>
 			</dl>
 			<p class="about-note">

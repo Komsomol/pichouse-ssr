@@ -128,6 +128,19 @@ h1 {
   letter-spacing: -0.025em;
 }
 
+/* Present for screen readers and search engines, not drawn on screen */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* [8] Movie Card - soft shadow for depth */
 .movie-block {
   display: flex;

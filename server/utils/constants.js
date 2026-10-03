@@ -90,4 +90,10 @@ export const BOX_OFFICE_CONFIG = {
 	// Mojo reports British grosses in US dollars, so the UI has to say so
 	CURRENCY: 'USD',
 	REQUEST_TIMEOUT: 15000,
+	// Display names for chart entries Mojo lists under the original film. Keyed
+	// by "<title> (<label>)". TMDb is still searched on the original title: the
+	// re-release's own TMDb entry has no details, poster or trailer.
+	TITLE_ALIASES: {
+		'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore',
+	},
 };

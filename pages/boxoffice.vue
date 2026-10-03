@@ -1,6 +1,9 @@
 <template>
 	<div class="container">
-		<h1>UK Box Office Top 10</h1>
+		<!-- The tab names the page; the heading stays for screen readers only -->
+		<h1 class="visually-hidden">
+			UK Box Office Top 10
+		</h1>
 
 		<p
 			v-if="weekend"

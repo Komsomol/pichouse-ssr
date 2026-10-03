@@ -92,13 +92,25 @@ export const parseWeekendChart = (html, topN = BOX_OFFICE_CONFIG.TOP_N) => {
 	const valueAt = (cells, key) =>
 		columns[key] === undefined ? '' : cells[columns[key]] || '';
 
+	// The release cell holds the film's name as a link, with any label such as
+	// "2026 Re-release" in a span after it. Reading the cell's text glued the
+	// two into "Avengers: Endgame2026 Re-release", which TMDb cannot match.
+	const releaseOf = (row) => {
+		const cell = $(row).find('td, th').eq(columns.title);
+		return {
+			name: cell.find('a').first().text().trim(),
+			label: cell.find('span').first().text().trim(),
+		};
+	};
+
 	return rows
 		.slice(1)
-		.map(row => cellsOf($, row))
-		.filter(cells => /^\d+$/.test(cells[columns.rank] || ''))
-		.map(cells => ({
+		.map(row => ({ cells: cellsOf($, row), release: releaseOf(row) }))
+		.filter(({ cells }) => /^\d+$/.test(cells[columns.rank] || ''))
+		.map(({ cells, release }) => ({
 			rank: Number(cells[columns.rank]),
-			title: valueAt(cells, 'title'),
+			title: release.name || valueAt(cells, 'title'),
+			label: release.label,
 			weekendGross: valueAt(cells, 'weekendGross'),
 			totalGross: valueAt(cells, 'totalGross'),
 			weeks: valueAt(cells, 'weeks'),
