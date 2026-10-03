@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { filterTrailerVideos } from '../tmdbApi.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import axios from 'axios';
+import { filterTrailerVideos, fetchVideosAndPosterFromTMDb } from '../tmdbApi.js';
+
+vi.mock('axios');
 
 // Shapes a TMDb video result
 const video = ({
@@ -111,5 +114,28 @@ describe('filterTrailerVideos', () => {
 	it('handles missing input', () => {
 		expect(filterTrailerVideos([])).toEqual([]);
 		expect(filterTrailerVideos()).toEqual([]);
+	});
+});
+
+describe('fetchVideosAndPosterFromTMDb', () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it('never logs the Authorization header when a request fails', async () => {
+		// Shaped like a real axios 404: the request config rides along on it
+		const error = Object.assign(new Error('Request failed with status code 404'), {
+			config: { headers: { Authorization: 'Bearer secret-token' } },
+			response: { status: 404, data: { status_code: 34 } },
+		});
+		axios.get.mockRejectedValueOnce(error);
+		const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const result = await fetchVideosAndPosterFromTMDb(1786842);
+
+		expect(result).toEqual({ videos: [], poster: null, runtime: null, voteAverage: null });
+		expect(logged).toHaveBeenCalledOnce();
+		expect(JSON.stringify(logged.mock.calls)).not.toContain('secret-token');
+		expect(logged.mock.calls[0][1]).toBe(404);
 	});
 });

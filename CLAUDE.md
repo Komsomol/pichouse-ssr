@@ -22,7 +22,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (148 tests)
+- **Testing:** Vitest + happy-dom (149 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -388,6 +388,10 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
 - **`fetchVideosAndPosterFromTMDb` returns `runtime` and `voteAverage`** as well
   as videos and poster. All four come off one `append_to_response=videos` call,
   so Box Office metadata costs no extra request. Do not split it back into two.
+- **Never log an axios error object.** It carries the request config, including
+  the `Authorization: Bearer` header - the TMDb token. Log
+  `error.response?.status || error.message`. `fetchVideosAndPosterFromTMDb`
+  leaked it this way until 3 Oct 2026; `tmdbApi.test.js` now guards it.
 - **`process.loadEnvFile` throws when `.env` is missing, where dotenv was quiet.**
   CI has no `.env` - secrets arrive as environment variables - so the call in
   `scripts/validate-env.js` must stay wrapped in try/catch.
@@ -434,9 +438,5 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
   the Somme" misses TMDb's "The Battle of the Somme" (leading article), and
   "A Nightmare on Elm Street 2" misses "...Elm Street Part 2". Both fall back to
   no match rather than a wrong one, which is the intended trade.
-- **`fetchVideosAndPosterFromTMDb` logs the whole axios error on failure**,
-  which includes the `Authorization: Bearer` header - i.e. the TMDb token.
-  GitHub masks secrets in CI logs, but local runs print it in full. Log
-  `error.message` / `error.response?.status` instead, as `fetchMovieFromTMDb` does.
 - `README.md` and `DEPLOYMENT.md` were brought current on 3 Oct 2026; keep them
   in step when changing workflows, env vars or Node version.

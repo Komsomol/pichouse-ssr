@@ -45,7 +45,7 @@ A statically generated site with three listings tabs - **Movies**, showing Scree
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
 - **CI/CD:** GitHub Actions (daily check at 06:37 UTC)
-- **Testing:** Vitest (148 tests)
+- **Testing:** Vitest (149 tests)
 - **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever

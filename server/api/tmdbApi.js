@@ -214,7 +214,12 @@ export const fetchVideosAndPosterFromTMDb = async (movieId) => {
 		return result;
 	}
 	catch (error) {
-		console.error(`Error fetching videos and poster for movie ID ${movieId}:`, error);
+		// Status or message only: the axios error object carries the request
+		// config, including the Authorization header with the TMDb token
+		console.error(
+			`Error fetching videos and poster for movie ID ${movieId}:`,
+			error.response?.status || error.message,
+		);
 		return { videos: [], poster: null, runtime: null, voteAverage: null };
 	}
 };
