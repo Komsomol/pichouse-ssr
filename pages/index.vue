@@ -73,10 +73,14 @@
 								:key="video.key || video.searchUrl"
 							>
 								<!-- Direct YouTube video - opens in modal -->
+								<!-- Real href so middle/Cmd/Ctrl-click opens YouTube in a new tab;
+								a plain left click is intercepted for the modal -->
 								<a
 									v-if="video.key && !video.isSearch"
-									href="javascript:void(0)"
-									@click="openModal(video.key)"
+									:href="`https://www.youtube.com/watch?v=${video.key}`"
+									target="_blank"
+									rel="noopener noreferrer"
+									@click.exact.prevent="openModal(video.key)"
 								>{{ video.name }}</a>
 								<!-- YouTube search link - opens in new tab -->
 								<a
@@ -108,7 +112,6 @@
 						v-if="movie.screen1Showtimes && movie.screen1Showtimes.length"
 						class="movie-showtimes"
 					>
-						<h4>🎬 Screen 1 Showtimes:</h4>
 						<div class="showtimes-grid">
 							<div
 								v-for="showtime in movie.screen1Showtimes"

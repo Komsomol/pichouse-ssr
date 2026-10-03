@@ -225,15 +225,6 @@ h1 {
   border-left: 3px solid var(--accent);
 }
 
-/* [4] Showtimes Heading - DM Serif Display */
-.movie-showtimes h4 {
-  font-family: 'DM Serif Display', Georgia, serif;
-  margin: 0 0 var(--space-md) 0;
-  color: var(--text-primary);
-  font-size: var(--font-md);
-  font-weight: 400;
-}
-
 /* Showtimes Grid - two columns even on mobile. A showtime is four short lines,
    so a full-width card wastes most of its width and makes a 15-screening film
    scroll for thousands of pixels. */

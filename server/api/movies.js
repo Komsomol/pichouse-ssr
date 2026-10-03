@@ -195,10 +195,14 @@ export default defineEventHandler(async (_event) => {
 		// ============================================================
 		const finalStart = Date.now();
 
+		// The raw feed's show_times covers every screen at every cinema - ~1,800
+		// sessions against the ~40 shown - and is serialised into the page's
+		// payload. Drop it and the other unused feed arrays once Screen 1 is
+		// extracted.
 		const finalMovies = enrichedMovies
-			.map(movie => ({
+			.map(({ show_times: _showTimes, movie_times: _movieTimes, _screen1Showtimes, ...movie }) => ({
 				...movie,
-				screen1Showtimes: enrichShowtimes(movie._screen1Showtimes),
+				screen1Showtimes: enrichShowtimes(_screen1Showtimes),
 			}))
 			.filter(movie => movie.videos?.length > 0)
 			.sort((a, b) => {

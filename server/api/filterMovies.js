@@ -204,8 +204,12 @@ export const sanitizeMovieTitle = (title) => {
 		/\s+[A-Z]{1,2}$/, // Matches ratings at the end like (PG) (U)
 	];
 
+	// Drop the whole trailing "+" clause first, as cleanTitleForSearch does.
+	// Removing only "+ Q&A" left "... with members of Madness" behind with no
+	// "+" for the search cleaner to find, so the film never matched.
+	let sanitizedTitle = title.replace(/\s*\+.*$/s, '').trim() || title;
+
 	// Remove exact unwanted substrings
-	let sanitizedTitle = title;
 
 	stringsToRemove.forEach((str) => {
 		sanitizedTitle = sanitizedTitle

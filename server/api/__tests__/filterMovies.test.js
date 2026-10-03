@@ -168,6 +168,13 @@ describe('sanitizeMovieTitle', () => {
 		expect(sanitizeMovieTitle('FILM CLUB: The Matrix (1999) (Rerelease) PG')).toBe('The Matrix');
 	});
 
+	it('should drop the whole trailing "+" clause, not just "+ Q&A"', () => {
+		const title = 'Madness: Take It or Leave It + Q&A with members of Madness';
+		expect(sanitizeMovieTitle(title)).toBe('Madness: Take It or Leave It');
+		expect(cleanTitleForSearch(sanitizeMovieTitle(title))).toBe('Madness: Take It or Leave It');
+		expect(sanitizeMovieTitle('Pressure + Live Broadcast Q&A')).toBe('Pressure');
+	});
+
 	it('should return null for empty titles', () => {
 		expect(sanitizeMovieTitle('')).toBeNull();
 	});
