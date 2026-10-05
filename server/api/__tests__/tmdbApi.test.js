@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import axios from 'axios';
-import { filterTrailerVideos, fetchVideosAndPosterFromTMDb } from '../tmdbApi.js';
+import { filterTrailerVideos, fetchVideosAndPosterFromTMDb, pickCurrentRelease } from '../tmdbApi.js';
 
 vi.mock('axios');
 
@@ -137,5 +137,37 @@ describe('fetchVideosAndPosterFromTMDb', () => {
 		expect(logged).toHaveBeenCalledOnce();
 		expect(JSON.stringify(logged.mock.calls)).not.toContain('secret-token');
 		expect(logged.mock.calls[0][1]).toBe(404);
+	});
+});
+
+describe('pickCurrentRelease', () => {
+	// Mon 5 Oct 2026
+	const NOW = Date.UTC(2026, 9, 5, 12);
+	const result = (title, release_date) => ({ title, original_title: title, release_date });
+
+	it('picks the newest released film of that exact title, not TMDb\'s first', () => {
+		// TMDb's real order for this search, 1995 version first
+		const movies = [
+			result('Sense and Sensibility', '1995-12-13'),
+			result('Sense and Sensibility', '2026-09-23'),
+			result('Sense and Sensibility', '2023-11-25'),
+			result('Sensibility and Sense', '1990-01-24'),
+		];
+		expect(pickCurrentRelease(movies, 'Sense and Sensibility', NOW).release_date).toBe('2026-09-23');
+	});
+
+	it('ignores newer films whose title only resembles the search', () => {
+		const movies = [result('Alien', '1979-05-25'), result('Alien Spa', '2026-09-16')];
+		expect(pickCurrentRelease(movies, 'Alien', NOW).title).toBe('Alien');
+	});
+
+	it('skips a same-titled film that is not out yet', () => {
+		const movies = [result('Pressure', '2026-05-29'), result('Pressure', '2027-03-01')];
+		expect(pickCurrentRelease(movies, 'Pressure', NOW).release_date).toBe('2026-05-29');
+	});
+
+	it('falls back to TMDb\'s first result when nothing matches exactly', () => {
+		const movies = [result('The Paradise Club', '2026-01-01'), result('Paradise', '2020-01-01')];
+		expect(pickCurrentRelease(movies, 'The Paradise', NOW).title).toBe('The Paradise Club');
 	});
 });

@@ -59,7 +59,7 @@ A statically generated site with five listings tabs - **Movies**, showing Screen
 - **Framework:** Nuxt 3 (Static Site Generation)
 - **Hosting:** Cloudflare Pages (global CDN)
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
-- **Testing:** Vitest (177 tests)
+- **Testing:** Vitest (188 tests)
 - **APIs:** Picturehouse, TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped), Clusterflick (BFI IMAX)
 
 All API calls happen at **build time** inside Nitro server routes, so no keys ever
@@ -254,6 +254,9 @@ Edit `BOX_OFFICE_CONFIG` in `server/utils/constants.js`:
 - **TOP_N** - how many films to keep (10)
 - **YEAR_INDEX_PATH** - Box Office Mojo's British weekend index, read to find the
   latest published chart
+- **MAX_WEEKENDS_TO_TRY** - Mojo fills a weekend's chart in over several days, so
+  a newest weekend short of `TOP_N` films is skipped for the one before; this
+  caps how far back it looks (3)
 - **TITLE_ALIASES** - display names for chart entries Mojo lists under the
   original film, keyed by `"<title> (<label>)"`, e.g.
   `'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore'`. TMDb is

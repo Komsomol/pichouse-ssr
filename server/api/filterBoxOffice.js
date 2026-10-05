@@ -45,24 +45,58 @@ const indexColumns = headers =>
 	);
 
 /**
+ * Lists the weekends on a Box Office Mojo year index page, newest first.
+ *
+ * Each row links its weekend twice - from the date range ("Aug 14-16") and
+ * from the week number - so links are kept once per path, first one winning:
+ * the date range, which is the label shown on the page.
+ *
+ * @param {string} html - Year index page HTML
+ * @returns {Array<{path: string, label: string}>} Weekend chart paths and labels
+ */
+export const parseWeekends = (html) => {
+	if (!html) return [];
+
+	const $ = cheerio.load(html);
+	const links = $('table a[href^="/weekend/"]')
+		.map((_index, link) => ({
+			path: $(link).attr('href'),
+			label: $(link).text().trim(),
+		}))
+		.get()
+		.filter(link => link.path);
+
+	return links.filter(
+		(link, index) => links.findIndex(other => other.path === link.path) === index,
+	);
+};
+
+/**
  * Finds the newest weekend on a Box Office Mojo year index page.
- *
- * Rows are ordered newest first, so the first weekend link is the latest
- * published chart. The link text ("Aug 14-16") is the weekend's date range.
- *
  * @param {string} html - Year index page HTML
  * @returns {{path: string, label: string}|null} Weekend chart path and label
  */
-export const parseLatestWeekend = (html) => {
-	if (!html) return null;
+export const parseLatestWeekend = html => parseWeekends(html)[0] || null;
 
-	const $ = cheerio.load(html);
-	const link = $('table a[href^="/weekend/"]').first();
-	const path = link.attr('href');
+/**
+ * Picks which weekend's chart to show.
+ *
+ * Mojo publishes a weekend's top films first and fills in the rest over the
+ * following days, so the newest weekend can hold two films. The newest chart
+ * with a full top N wins; if none is full, the one with the most films does,
+ * the newer on a tie.
+ *
+ * @param {Array<{weekend: string, films: Array}>} charts - Newest first
+ * @param {number} [topN] - Films a complete chart holds
+ * @returns {{weekend: string, films: Array}|null} The chart to show
+ */
+export const chooseWeekendChart = (charts, topN = BOX_OFFICE_CONFIG.TOP_N) => {
+	const usable = (Array.isArray(charts) ? charts : []).filter(chart => chart?.films?.length > 0);
 
-	if (!path) return null;
+	if (usable.length === 0) return null;
 
-	return { path, label: link.text().trim() };
+	return usable.find(chart => chart.films.length >= topN)
+		|| usable.reduce((best, chart) => (chart.films.length > best.films.length ? chart : best));
 };
 
 /**

@@ -24,7 +24,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (177 tests)
+- **Testing:** Vitest + happy-dom (188 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -149,6 +149,7 @@ BOX_OFFICE_CONFIG: {
   BASE_URL: 'https://www.boxofficemojo.com',
   YEAR_INDEX_PATH: '/weekend/by-year/?area=GB',  // newest weekend first
   TOP_N: 10,
+  MAX_WEEKENDS_TO_TRY: 3,  // step back past a partly published weekend
   CURRENCY: 'USD',  // Mojo reports British grosses in dollars
   TITLE_ALIASES: { 'Avengers: Endgame (2026 Re-release)': 'Avengers Endgame: Encore' }
 }
@@ -287,8 +288,16 @@ so it has no poster or trailer. `BOX_OFFICE_CONFIG.TITLE_ALIASES`, keyed by
 `"<title> (<label>)"`, only renames the card. Unaliased re-releases show the
 original film's name, which is accurate if less specific.
 
-**Do not pick a re-release by "latest TMDb match"** (`findLatest`). TMDb search
-is fuzzy: the latest result for "Alien" is "Alien Spa" (2026).
+**Do not pick by "latest TMDb match" across all results** (`findLatest`). TMDb
+search is fuzzy: the latest result for "Alien" is "Alien Spa" (2026).
+
+**Unlabelled chart entries pick the newest *exact-title* release instead**
+(`pickCurrentRelease`, via `fetchMovieFromTMDb(title, false, true)`). TMDb's
+first result is often an older namesake: "Sense and Sensibility" led with the
+1995 film while the 2026 adaptation charted, and "Resident Evil" or "Pressure"
+do the same. Holding to the exact title first is what makes "newest" safe, and
+films not yet released are skipped. Labelled entries ("2026 Re-release") keep
+TMDb's first match - the original, which is the one with a poster and trailer.
 
 ## Design
 
@@ -507,8 +516,13 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
   filter (465KB for both cinemas, ~1.7s) but drops `Rating`, `RunTime` and
   `filter_class_names`, which the Movies tab renders and `movies.js` uses.
 - **Box Office Mojo has no "latest weekend" URL.** A build reads the year index
-  and follows the first row, so the chart lags the weekend by however long Mojo
-  takes to publish. `britinfo.net`, which `uk_top_10_scraper` used, has not
+  and tries weekends newest first, so the chart lags the weekend by however
+  long Mojo takes to publish.
+- **Mojo publishes a weekend's chart in parts.** The newest weekend can list
+  only its top two films for days - Oct 2-4 2026 did - and showing it gave a
+  two-film "top 10". `fetchUkTop10` steps back to the newest weekend with a full
+  `TOP_N` (at most `MAX_WEEKENDS_TO_TRY`); with none full it shows the most
+  complete. The page's "Weekend of …" line names whichever was used. `britinfo.net`, which `uk_top_10_scraper` used, has not
   updated since 4 September 2025 - do not switch back to it.
 - **Mojo reports British grosses in US dollars.** The Box Office page says so;
   do not relabel them as £.

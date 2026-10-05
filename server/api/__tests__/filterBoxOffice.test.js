@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseLatestWeekend, parseWeekendChart } from '../filterBoxOffice.js';
+import { chooseWeekendChart, parseLatestWeekend, parseWeekends, parseWeekendChart } from '../filterBoxOffice.js';
 
 // Box Office Mojo year index: weekends newest first, each linking to its chart
 const yearIndexHtml = `
@@ -50,6 +50,70 @@ describe('parseLatestWeekend', () => {
 	it('returns null when the page has no weekend links', () => {
 		expect(parseLatestWeekend('<table><tr><td>No data</td></tr></table>')).toBeNull();
 		expect(parseLatestWeekend('')).toBeNull();
+	});
+});
+
+describe('parseWeekends', () => {
+	it('lists every weekend newest first', () => {
+		expect(parseWeekends(yearIndexHtml).map(weekend => weekend.label)).toEqual(['Aug 14-16', 'Aug 7-9']);
+	});
+
+	it('keeps each weekend once, labelled by its date range', () => {
+		// Mojo links each row's weekend from the dates and again from the week number
+		const html = `
+<table>
+	<tr>
+		<td><a href="/weekend/2026W40/?area=GB&amp;ref_=bo_wey_table_1">Oct 2-4</a></td>
+		<td><a href="/weekend/2026W40/?area=GB&amp;ref_=bo_wey_table_1">40</a></td>
+	</tr>
+	<tr>
+		<td><a href="/weekend/2026W39/?area=GB&amp;ref_=bo_wey_table_2">Sep 25-27</a></td>
+		<td><a href="/weekend/2026W39/?area=GB&amp;ref_=bo_wey_table_2">39</a></td>
+	</tr>
+</table>`;
+		expect(parseWeekends(html).map(weekend => weekend.label)).toEqual(['Oct 2-4', 'Sep 25-27']);
+	});
+
+	it('returns an empty list for unusable input', () => {
+		expect(parseWeekends('')).toEqual([]);
+		expect(parseWeekends('<p>Down for maintenance</p>')).toEqual([]);
+	});
+});
+
+describe('chooseWeekendChart', () => {
+	const films = count => Array.from({ length: count }, (_, index) => ({ rank: index + 1 }));
+
+	it('skips a newest weekend Mojo has only partly published', () => {
+		const chosen = chooseWeekendChart([
+			{ weekend: 'Oct 2-4', films: films(2) },
+			{ weekend: 'Sep 25-27', films: films(10) },
+		]);
+		expect(chosen.weekend).toBe('Sep 25-27');
+	});
+
+	it('keeps the newest weekend once it is complete', () => {
+		const chosen = chooseWeekendChart([
+			{ weekend: 'Oct 2-4', films: films(10) },
+			{ weekend: 'Sep 25-27', films: films(10) },
+		]);
+		expect(chosen.weekend).toBe('Oct 2-4');
+	});
+
+	it('falls back to the most complete chart when none is full, newer on a tie', () => {
+		expect(chooseWeekendChart([
+			{ weekend: 'Oct 2-4', films: films(2) },
+			{ weekend: 'Sep 25-27', films: films(7) },
+			{ weekend: 'Sep 18-20', films: films(5) },
+		]).weekend).toBe('Sep 25-27');
+		expect(chooseWeekendChart([
+			{ weekend: 'Oct 2-4', films: films(4) },
+			{ weekend: 'Sep 25-27', films: films(4) },
+		]).weekend).toBe('Oct 2-4');
+	});
+
+	it('returns null when every scrape came back empty', () => {
+		expect(chooseWeekendChart([{ weekend: 'Oct 2-4', films: [] }])).toBeNull();
+		expect(chooseWeekendChart([])).toBeNull();
 	});
 });
 

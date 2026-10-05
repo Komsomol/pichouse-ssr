@@ -36,7 +36,10 @@ const formatRating = voteAverage =>
  * @returns {Promise<object>} Chart entry with metadata and videos
  */
 const enrichFilm = async (chartFilm) => {
-	const movie = await fetchMovieFromTMDb(chartFilm.title);
+	// A charting film is almost always the newest of its name. A labelled
+	// entry ("2026 Re-release") is an old film back in cinemas, so it keeps
+	// TMDb's first match - the original, which carries the poster and trailer.
+	const movie = await fetchMovieFromTMDb(chartFilm.title, false, !chartFilm.label);
 	const film = {
 		...chartFilm,
 		title: BOX_OFFICE_CONFIG.TITLE_ALIASES[`${chartFilm.title} (${chartFilm.label})`]

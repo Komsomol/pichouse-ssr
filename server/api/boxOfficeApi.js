@@ -10,7 +10,7 @@
 import axios from 'axios';
 import { boxOfficeCache } from '../utils/cache.js';
 import { BOX_OFFICE_CONFIG } from '../utils/constants.js';
-import { parseLatestWeekend, parseWeekendChart } from './filterBoxOffice.js';
+import { chooseWeekendChart, parseWeekends, parseWeekendChart } from './filterBoxOffice.js';
 
 /**
  * Fetches a Mojo page as HTML.
@@ -34,27 +34,53 @@ const fetchPage = async (path) => {
 };
 
 /**
- * Finds the most recently published UK weekend chart.
+ * Lists the most recent UK weekends, newest first, enough to try.
  *
- * The index without a year serves the current one, which is empty in the first
- * days of January - hence the fall back to last year's index.
+ * The index without a year serves the current one, which in the first days
+ * of January holds one weekend or none - hence topping up from last year's.
  *
- * @param {number} [year] - Current year, for the January fallback
- * @returns {Promise<{path: string, label: string}|null>} Weekend chart location
+ * @param {number} [year] - Current year, for the January top-up
+ * @returns {Promise<Array<{path: string, label: string}>>} Weekend chart locations
  */
-export const fetchLatestWeekend = async (year = new Date().getFullYear()) => {
-	const current = parseLatestWeekend(
-		await fetchPage(BOX_OFFICE_CONFIG.YEAR_INDEX_PATH),
-	);
-	if (current) return current;
+export const fetchRecentWeekends = async (year = new Date().getFullYear()) => {
+	const wanted = BOX_OFFICE_CONFIG.MAX_WEEKENDS_TO_TRY;
+	const current = parseWeekends(await fetchPage(BOX_OFFICE_CONFIG.YEAR_INDEX_PATH));
 
-	console.warn('⚠️  [Box Office] No weekend in the current year index, trying last year');
+	if (current.length >= wanted) return current.slice(0, wanted);
 
-	return parseLatestWeekend(
-		await fetchPage(
-			BOX_OFFICE_CONFIG.YEAR_INDEX_TEMPLATE.replace('{year}', year - 1),
-		),
+	console.warn('⚠️  [Box Office] Few weekends in the current year index, adding last year\'s');
+
+	const previous = parseWeekends(
+		await fetchPage(BOX_OFFICE_CONFIG.YEAR_INDEX_TEMPLATE.replace('{year}', year - 1)),
 	);
+
+	return [...current, ...previous].slice(0, wanted);
+};
+
+/**
+ * Fetches weekend charts newest first, stopping at the first complete one.
+ * @param {Array<{path: string, label: string}>} weekends - Newest first
+ * @param {Array} [fetched] - Charts fetched so far
+ * @returns {Promise<Array<{weekend: string, films: Array}>>} Charts fetched
+ */
+const fetchChartsUntilComplete = async (weekends, fetched = []) => {
+	if (weekends.length === 0) return fetched;
+
+	const [weekend, ...rest] = weekends;
+	const chart = {
+		weekend: weekend.label,
+		films: parseWeekendChart(await fetchPage(weekend.path)),
+	};
+	const charts = [...fetched, chart];
+
+	if (chart.films.length >= BOX_OFFICE_CONFIG.TOP_N) return charts;
+
+	console.warn(
+		`⚠️  [Box Office] ${weekend.label} has ${chart.films.length} films so far, `
+		+ 'trying the weekend before',
+	);
+
+	return fetchChartsUntilComplete(rest, charts);
 };
 
 /**
@@ -70,20 +96,21 @@ export const fetchUkTop10 = async () => {
 	const cached = boxOfficeCache.get(cacheKey);
 	if (cached) return cached;
 
-	const weekend = await fetchLatestWeekend();
+	const weekends = await fetchRecentWeekends();
 
-	if (!weekend) {
+	if (weekends.length === 0) {
 		console.error('Error fetching box office chart: no weekend link found');
 		return { weekend: null, films: [] };
 	}
 
-	const films = parseWeekendChart(await fetchPage(weekend.path));
-	const result = { weekend: weekend.label, films };
+	const chart = chooseWeekendChart(await fetchChartsUntilComplete(weekends));
 
-	// Only cache a successful scrape, so a transient failure is retried
-	if (films.length > 0) {
-		boxOfficeCache.set(cacheKey, result);
+	if (!chart) {
+		return { weekend: null, films: [] };
 	}
 
-	return result;
+	// Only cache a successful scrape, so a transient failure is retried
+	boxOfficeCache.set(cacheKey, chart);
+
+	return chart;
 };

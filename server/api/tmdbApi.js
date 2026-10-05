@@ -97,16 +97,40 @@ export const filterTrailerVideos = (videos = []) => {
 	return youtube.filter(namesATrailer).sort(newestFirst);
 };
 
+/**
+ * Picks the release a chart entry means when several films share its title.
+ *
+ * Searching "Sense and Sensibility" leads with the 1995 film while the one
+ * charting is the 2026 adaptation. A film in a weekend chart is almost always
+ * current, so among results with exactly this title the latest already
+ * released wins. Results are held to the exact title first: "latest" across
+ * all of TMDb's fuzzy results finds things like "Alien Spa" for "Alien".
+ * With no exact match, TMDb's first result stands, as before.
+ *
+ * @param {Array} movies - TMDb search results
+ * @param {string} title - Title searched for
+ * @param {number} [now] - Current time, so unreleased films are skipped
+ * @returns {object|undefined} The chosen result
+ */
+export const pickCurrentRelease = (movies, title, now = Date.now()) => {
+	const today = new Date(now).toISOString().slice(0, 10);
+	const released = filterByExactTitle(title, movies)
+		.filter(movie => movie.release_date && movie.release_date <= today);
+
+	return released.length > 0 ? findLatestMovie(released) : movies[0];
+};
+
 const createPosterUrl = posterPath =>
 	posterPath ? `https://image.tmdb.org/t/p/w780${posterPath}` : null;
 
-// Fetch movie from TMDb by title, with an option to specify if we are looking for the latest released movie
-export const fetchMovieFromTMDb = async (title, findLatest = false) => {
+// Fetch movie from TMDb by title, with an option to specify if we are looking for the latest released movie.
+// currentRelease prefers the newest released film with exactly this title - see pickCurrentRelease.
+export const fetchMovieFromTMDb = async (title, findLatest = false, currentRelease = false) => {
 	// Clean the title for better search results (removes 35mm, Anniversary, etc.)
 	const cleanedTitle = cleanTitleForSearch(title);
 
 	// Check cache first (use original title for cache key consistency)
-	const cacheKey = `movie:${title}:${findLatest}`;
+	const cacheKey = `movie:${title}:${findLatest}:${currentRelease}`;
 	const cachedMovie = tmdbCache.get(cacheKey);
 	if (cachedMovie) {
 		return cachedMovie;
@@ -159,6 +183,8 @@ export const fetchMovieFromTMDb = async (title, findLatest = false) => {
 				const matchedMovie = findMovieByReleaseDate(movies, specificMatch.release_date);
 				if (matchedMovie) return matchedMovie;
 			}
+
+			if (currentRelease) return pickCurrentRelease(movies, cleanedTitle);
 
 			// Return latest or first movie
 			return findLatest ? findLatestMovie(movies) : movies[0];

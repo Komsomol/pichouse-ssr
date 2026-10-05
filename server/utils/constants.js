@@ -87,6 +87,9 @@ export const BOX_OFFICE_CONFIG = {
 	// published weekend
 	YEAR_INDEX_TEMPLATE: '/weekend/by-year/{year}/?area=GB',
 	TOP_N: 10,
+	// Mojo fills a weekend's chart in over several days. When the newest is
+	// short of TOP_N films, step back - at most this many weekends in all
+	MAX_WEEKENDS_TO_TRY: 3,
 	// Mojo reports British grosses in US dollars, so the UI has to say so
 	CURRENCY: 'USD',
 	REQUEST_TIMEOUT: 15000,
