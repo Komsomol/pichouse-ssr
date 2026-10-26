@@ -23,6 +23,11 @@ describe('cleanTitleForSearch', () => {
 		expect(cleanTitleForSearch('NT Live: Hamlet')).toBe('Hamlet');
 	});
 
+	it('should remove Dog-Friendly prefix', () => {
+		expect(cleanTitleForSearch('Dog-Friendly - Ghosts: Possession of Button House'))
+			.toBe('Ghosts: Possession of Button House');
+	});
+
 	it('should remove FILM CLUB prefix', () => {
 		expect(cleanTitleForSearch('FILM CLUB: The Matrix')).toBe('The Matrix');
 	});

@@ -62,6 +62,7 @@ export const cleanTitleForSearch = (title) => {
 		/\s*\(Preview\)$/i,
 		/^Preview Screening:\s*/i,
 		/^Relaxed Screening:\s*/i,
+		/^Dog[-\s]?Friendly\s*-\s*/i,
 		/^FILM CLUB:\s*/i,
 		/^NT Live:\s*/i,
 		/^EXHIBITION ON SCREEN:\s*/i,
