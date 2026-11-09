@@ -119,7 +119,7 @@
 								:href="movie.metascore.url"
 								target="_blank"
 								rel="noopener"
-							>Metascore {{ movie.metascore.score }}</a>
+							>Metacritic reviews</a>
 						</li>
 					</ul>
 

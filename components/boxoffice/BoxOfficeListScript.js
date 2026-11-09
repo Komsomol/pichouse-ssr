@@ -24,7 +24,6 @@ export default function useBoxOfficeList() {
 			formatValue(film.year),
 			formatValue(film.runtime),
 			formatValue(film.rating) && `★ ${film.rating}`,
-			film.metascore && `Metascore ${film.metascore.score}`,
 			formatValue(film.distributor),
 			formatValue(film.weeks) && `week ${film.weeks}`,
 		]

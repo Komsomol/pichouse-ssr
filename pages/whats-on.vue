@@ -76,7 +76,7 @@
 									:href="film.metascore.url"
 									target="_blank"
 									rel="noopener"
-								>Metascore {{ film.metascore.score }}</a>
+								>Metacritic reviews</a>
 							</li>
 							<li
 								v-for="video in film.videos"

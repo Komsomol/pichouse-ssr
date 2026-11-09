@@ -98,6 +98,15 @@
 					<div class="boxoffice-details">
 						<p class="boxoffice-meta">
 							{{ metaLine(film) }}
+							<template v-if="film.metascore">
+								·
+								<a
+									class="movie-metascore"
+									:href="film.metascore.url"
+									target="_blank"
+									rel="noopener"
+								>Metacritic reviews</a>
+							</template>
 						</p>
 
 						<dl class="boxoffice-grosses">

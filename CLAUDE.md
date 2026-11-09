@@ -277,8 +277,15 @@ per film per day) was rejected for exactly that reason; don't bring it back.
 
 ## Metacritic scores
 
-Every tab shows a film's Metascore when Metacritic has one, and nothing when it
-does not (unreleased films, event screenings). `fetchVideosAndPosterFromTMDb`
+Every tab shows a "Metacritic reviews" link when Metacritic has scored the film,
+and nothing when it has not (unreleased films, event screenings).
+
+**Show the link, not the number.** OMDB's Metascore is a snapshot it refreshes
+rarely, while Metacritic's moves as reviews arrive. Checked 9 Nov 2026: Fjord
+78 on OMDB vs 80, La Bola Negra 86 vs 77. A number beside a link to a different
+number looks broken, and nothing free tracks Metacritic exactly.
+
+`fetchVideosAndPosterFromTMDb`
 passes TMDb's `imdb_id` to `fetchMetascoreFromOMDB`, so the score is looked up
 by id, not title - one OMDB call per film, cached with the details. The value is
 `{ score, url }` or null; `url` is a Metacritic search for the title, because

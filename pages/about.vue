@@ -135,7 +135,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>Metacritic</a>
-					scores, and a fallback trailer lookup when TMDb has none.
+					review links, and a fallback trailer lookup when TMDb has none.
 				</dd>
 
 				<dt>
