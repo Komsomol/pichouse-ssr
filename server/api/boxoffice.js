@@ -59,12 +59,13 @@ const enrichFilm = async (chartFilm) => {
 		};
 	}
 
-	const { videos, poster, runtime, voteAverage }
+	const { videos, poster, runtime, voteAverage, metascore }
 		= await fetchVideosAndPosterFromTMDb(movie.id);
 
 	return {
 		...film,
 		poster,
+		metascore,
 		plot: movie.overview || '',
 		year: (movie.release_date || '').slice(0, 4),
 		runtime: formatRuntime(runtime),

@@ -113,6 +113,14 @@
 						</li>
 						<li>{{ movie.omdbData?.Runtime || movie.RunTime }} min</li>
 						<li>Released {{ formatDate(movie.release_date) }}</li>
+						<li v-if="movie.metascore">
+							<a
+								class="movie-metascore"
+								:href="movie.metascore.url"
+								target="_blank"
+								rel="noopener"
+							>Metascore {{ movie.metascore.score }}</a>
+						</li>
 					</ul>
 
 					<p class="movie-overview">

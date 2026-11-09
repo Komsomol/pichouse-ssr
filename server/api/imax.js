@@ -33,11 +33,12 @@ const enrichFilm = async (film) => {
 		return { ...film, poster: null, videos: searchTrailer() };
 	}
 
-	const { videos, poster, runtime } = await fetchVideosAndPosterFromTMDb(film.tmdbId);
+	const { videos, poster, runtime, metascore } = await fetchVideosAndPosterFromTMDb(film.tmdbId);
 
 	return {
 		...film,
 		poster,
+		metascore,
 		runtime: film.runtime || runtime,
 		videos: videos.length > 0 ? videos.slice(0, MAX_TRAILERS) : searchTrailer(),
 	};

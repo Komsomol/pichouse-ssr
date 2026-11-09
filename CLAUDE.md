@@ -24,7 +24,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (188 tests)
+- **Testing:** Vitest + happy-dom (199 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -99,7 +99,7 @@ Do not remove the list.
 | `/server/api/movies.js` | Movies tab orchestrator |
 | `/server/api/picturehouseApi.js` | Picturehouse API client (cinema ID hardcoded `029`), 30s timeout + 3 attempts |
 | `/server/api/tmdbApi.js` | TMDb client: search, prefix retry, trailer ranking |
-| `/server/api/omdbApi.js` | OMDB API client (Movies tab fallback) |
+| `/server/api/omdbApi.js` | OMDB client: Movies tab fallback, Metascore by IMDb id |
 | `/server/api/filterMovies.js` | Title cleaning, strand prefixes, exact-title matching |
 | `/server/api/trailers.js` | Studio trailers orchestrator |
 | `/server/api/youtubeApi.js` | YouTube Data API v3 client |
@@ -275,6 +275,17 @@ per film per day) was rejected for exactly that reason; don't bring it back.
   takes the shared grid's `times` area - without it the venue lines land in
   the 96px poster column.
 
+## Metacritic scores
+
+Every tab shows a film's Metascore when Metacritic has one, and nothing when it
+does not (unreleased films, event screenings). `fetchVideosAndPosterFromTMDb`
+passes TMDb's `imdb_id` to `fetchMetascoreFromOMDB`, so the score is looked up
+by id, not title - one OMDB call per film, cached with the details. The value is
+`{ score, url }` or null; `url` is a Metacritic search for the title, because
+OMDB gives no page link and guessing Metacritic's slug fails for namesakes.
+**Do not scrape metacritic.com** - there is no public API and its terms forbid
+it. Without `OMDB_API_KEY` no request is made and no scores show.
+
 ## Box office titles
 
 Mojo's release cell is a link holding the film's name plus a span holding any
@@ -353,7 +364,7 @@ dark to read on black. Keep it a plain inversion rather than a separate palette.
 ```
 TMDB_TOKEN=eyJ...          # Required - TMDb API Read Access Token
 COOKIE=your_cookie         # Required - Picturehouse website cookie
-OMDB_API_KEY=your_key      # Optional - Movies tab trailer/poster fallback
+OMDB_API_KEY=your_key      # Optional - Metascores + Movies tab trailer/poster fallback
 YT_API_KEY=your_key        # Optional - powers the Trailers tab
 ```
 
@@ -403,6 +414,7 @@ reason to move.
 Test files:
 - `server/api/__tests__/picturehouseApi.test.js`
 - `server/api/__tests__/imaxApi.test.js`
+- `server/api/__tests__/omdbApi.test.js`
 - `server/api/__tests__/filterMovies.test.js`
 - `server/api/__tests__/filterTrailers.test.js`
 - `server/api/__tests__/filterBoxOffice.test.js`
@@ -458,10 +470,9 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
   npm hoists. Symptom: `lock file's cac@7.0.0 does not satisfy cac@6.7.14`. A
   second `npm install` converges the tree. Always verify with `npm ci` before
   pushing a lockfile change.
-- **`OMDB_API_KEY` is set in GitHub Secrets but absent from the local `.env`.**
-  The key is valid - CI logs show the Movies tab's OMDB fallback working - but
-  locally every OMDB call 401s, so that path cannot be exercised in dev. Do not
-  conclude from a local 401 that the secret is broken.
+- **`OMDB_API_KEY` is in GitHub Secrets and, since 9 Nov 2026, the local `.env`.**
+  Without it locally, Metascores do not show and the OMDB fallback 401s - do not
+  conclude from that that the secret is broken.
 - **`gh secret set NAME` with no piped value stores an empty string.** The secret
   then appears in `gh secret list` while the build behaves as if it is unset.
 - **Cloudflare edge can serve a stale HTML shell for a minute after deploy.**
@@ -483,7 +494,7 @@ a gotcha below; the short version here is the conclusion, the log has the eviden
   10-17s of a ~11-18s build and its latency swings run to run. Micro-optimising
   the title regexes is pointless: they cost ~1ms for all 304 titles.
 - **`fetchVideosAndPosterFromTMDb` returns `runtime` and `voteAverage`** as well
-  as videos and poster. All four come off one `append_to_response=videos` call,
+  as videos and poster, plus `metascore` (see Metacritic scores). All four come off one `append_to_response=videos` call,
   so Box Office metadata costs no extra request. Do not split it back into two.
 - **Never log an axios error object.** It carries the request config, including
   the `Authorization: Bearer` header - the TMDb token. Log

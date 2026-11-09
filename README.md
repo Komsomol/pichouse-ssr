@@ -96,7 +96,7 @@ reach the browser and the deployed site is plain static HTML.
    | --- | --- | --- |
    | `TMDB_TOKEN` | ✅ | TMDb API Read Access Token (starts `eyJ`) - film metadata and trailers |
    | `COOKIE` | ✅ | Picturehouse website cookie - showtimes |
-   | `OMDB_API_KEY` | ➖ | Fallback trailer lookup when TMDb has no video |
+   | `OMDB_API_KEY` | ➖ | Metacritic scores, and fallback trailer lookup when TMDb has no video |
    | `YT_API_KEY` | ➖ | YouTube Data API v3 key - powers the Trailers tab |
 
    The build fails without the two required values. Without the optional ones it

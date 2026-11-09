@@ -137,7 +137,9 @@ export default defineEventHandler(async (_event) => {
 
 				if (tmdbMovieData) {
 					const { id: tmdbMovieId, original_title, release_date, overview } = tmdbMovieData;
-					let { videos, poster } = await fetchVideosAndPosterFromTMDb(tmdbMovieId);
+					const details = await fetchVideosAndPosterFromTMDb(tmdbMovieId);
+					const { metascore } = details;
+					let { videos, poster } = details;
 
 					// If TMDb has no videos, try OMDB as fallback
 					if (!videos || videos.length === 0) {
@@ -153,7 +155,7 @@ export default defineEventHandler(async (_event) => {
 						console.log(`  ✓ [${index + 1}/${deduplicatedMovies.length}] "${movie._originalTitle}" - TMDb (${Date.now() - movieStart}ms)`);
 					}
 
-					return { ...movie, original_title, release_date, overview, videos, poster };
+					return { ...movie, original_title, release_date, overview, videos, poster, metascore };
 				}
 				else {
 					// TMDb found nothing - try OMDB directly

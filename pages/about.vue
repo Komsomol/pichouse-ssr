@@ -129,7 +129,14 @@
 						rel="noopener noreferrer"
 					>OMDb</a>
 				</dt>
-				<dd>Fallback trailer lookup when TMDb has none.</dd>
+				<dd>
+					<a
+						href="https://www.metacritic.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>Metacritic</a>
+					scores, and a fallback trailer lookup when TMDb has none.
+				</dd>
 
 				<dt>
 					<a

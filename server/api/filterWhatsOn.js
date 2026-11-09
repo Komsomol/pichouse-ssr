@@ -95,6 +95,7 @@ export const fromMovies = (movies = []) =>
 		videos: movie.videos || [],
 		certificate: movie.Rating || '',
 		runtime: runtimeMinutes(movie.omdbData?.Runtime || movie.RunTime),
+		metascore: movie.metascore || null,
 		venue: 'Screen 1',
 		tab: '/',
 		screenings: (movie.screen1Showtimes || [])
@@ -120,6 +121,7 @@ export const fromImax = (films = []) =>
 		videos: film.videos || [],
 		certificate: film.certificate || '',
 		runtime: film.runtime || null,
+		metascore: film.metascore || null,
 		venue: 'BFI IMAX',
 		tab: '/imax',
 		screenings: (film.screenings || [])
@@ -200,6 +202,7 @@ export const buildWhatsOn = (listings, now = Date.now()) => {
 				videos: (firstWith(group, 'videos') || []).slice(0, 1),
 				certificate: firstWith(group, 'certificate') || '',
 				runtime: firstWith(group, 'runtime') || null,
+				metascore: firstWith(group, 'metascore') || null,
 				venues,
 				nextKey: venues[0].next.key,
 			};

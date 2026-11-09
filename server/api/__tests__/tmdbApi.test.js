@@ -133,7 +133,7 @@ describe('fetchVideosAndPosterFromTMDb', () => {
 
 		const result = await fetchVideosAndPosterFromTMDb(1786842);
 
-		expect(result).toEqual({ videos: [], poster: null, runtime: null, voteAverage: null });
+		expect(result).toEqual({ videos: [], poster: null, runtime: null, voteAverage: null, metascore: null });
 		expect(logged).toHaveBeenCalledOnce();
 		expect(JSON.stringify(logged.mock.calls)).not.toContain('secret-token');
 		expect(logged.mock.calls[0][1]).toBe(404);

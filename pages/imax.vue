@@ -102,6 +102,14 @@
 						<li v-if="film.releaseDate">
 							Released {{ formatDate(film.releaseDate) }}
 						</li>
+						<li v-if="film.metascore">
+							<a
+								class="movie-metascore"
+								:href="film.metascore.url"
+								target="_blank"
+								rel="noopener"
+							>Metascore {{ film.metascore.score }}</a>
+						</li>
 					</ul>
 
 					<p

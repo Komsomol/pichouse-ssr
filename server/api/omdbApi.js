@@ -57,6 +57,57 @@ export const fetchMovieFromOMDB = async (title, year = null) => {
 };
 
 /**
+ * Reads OMDB's Metascore field as a 0-100 number.
+ * OMDB writes "N/A" when Metacritic has not scored the film.
+ * @param {string} value - OMDB `Metascore`
+ * @returns {number|null} Score, or null when there is none
+ */
+export const parseMetascore = (value) => {
+	const score = Number.parseInt(value, 10);
+	return score >= 0 && score <= 100 ? score : null;
+};
+
+/**
+ * Links to Metacritic's search for the film. OMDB gives no page URL, and
+ * guessing Metacritic's slug fails for namesakes ("...-2026").
+ * @param {string} title - Film title
+ * @returns {string} Metacritic movie search URL
+ */
+export const createMetacriticUrl = title =>
+	`https://www.metacritic.com/search/${encodeURIComponent(title)}/?category=2`;
+
+/**
+ * Fetches a film's Metacritic score from OMDB by IMDb id. The id comes off
+ * TMDb's details, so the score belongs to the same film - no title search.
+ * @param {string} imdbId - IMDb id, e.g. "tt0133093"
+ * @param {string} title - Title for the Metacritic link
+ * @returns {Promise<{score: number, url: string}|null>} Null when unscored,
+ *   unknown, or OMDB is unavailable
+ */
+export const fetchMetascoreFromOMDB = async (imdbId, title) => {
+	// Read at call time so tests can set it; absent locally until added to .env
+	const apiKey = process.env.OMDB_API_KEY;
+	if (!apiKey || !imdbId) return null;
+
+	try {
+		const { data } = await axios.get(OMDB_BASE_URL, {
+			params: { apikey: apiKey, i: imdbId },
+			timeout: 10000,
+		});
+		const score = data?.Response === 'True' ? parseMetascore(data.Metascore) : null;
+		return score === null ? null : { score, url: createMetacriticUrl(title) };
+	}
+	catch (error) {
+		// Status or message only: the error's config carries the API key
+		console.error(
+			`Error fetching Metascore for ${imdbId}:`,
+			error.response?.status || error.message,
+		);
+		return null;
+	}
+};
+
+/**
  * Create a YouTube trailer search video object from movie title and year
  * This creates a fallback "trailer" that links to YouTube search results
  * @param {string} title - Movie title

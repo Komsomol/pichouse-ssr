@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { tmdbCache } from '../utils/cache.js';
 import { cleanTitleForSearch, stripStrandPrefix, filterByExactTitle } from './filterMovies.js';
+import { fetchMetascoreFromOMDB } from './omdbApi.js';
 
 const TMDB_TOKEN = process.env.TMDB_TOKEN;
 
@@ -235,6 +236,8 @@ export const fetchVideosAndPosterFromTMDb = async (movieId) => {
 			poster,
 			runtime: data.runtime || null,
 			voteAverage: data.vote_average || null,
+			// Details carry the IMDb id, which OMDB looks the score up by
+			metascore: await fetchMetascoreFromOMDB(data.imdb_id, data.title),
 		};
 		tmdbCache.set(cacheKey, result);
 		return result;
@@ -246,6 +249,6 @@ export const fetchVideosAndPosterFromTMDb = async (movieId) => {
 			`Error fetching videos and poster for movie ID ${movieId}:`,
 			error.response?.status || error.message,
 		);
-		return { videos: [], poster: null, runtime: null, voteAverage: null };
+		return { videos: [], poster: null, runtime: null, voteAverage: null, metascore: null };
 	}
 };

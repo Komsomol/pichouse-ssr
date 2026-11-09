@@ -248,6 +248,12 @@ a {
   color: var(--letter-soft);
 }
 
+/* Metacritic score: a link out, so exit-sign green like every other action */
+.movie-metascore {
+  color: var(--exit);
+  font-weight: 600;
+}
+
 /* BBFC-style certificate: the number in a box, as it appears on a poster */
 .movie-cert {
   display: inline-flex;

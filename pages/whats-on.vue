@@ -70,6 +70,14 @@
 							<li v-if="film.runtime">
 								{{ film.runtime }} min
 							</li>
+							<li v-if="film.metascore">
+								<a
+									class="movie-metascore"
+									:href="film.metascore.url"
+									target="_blank"
+									rel="noopener"
+								>Metascore {{ film.metascore.score }}</a>
+							</li>
 							<li
 								v-for="video in film.videos"
 								:key="video.key || video.searchUrl"

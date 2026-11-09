@@ -148,6 +148,20 @@ describe('buildWhatsOn', () => {
 		expect(now[0].videos).toHaveLength(1);
 	});
 
+	it('keeps the Metascore from whichever venue has one, and omits it when none does', () => {
+		const metascore = { score: 81, url: 'https://www.metacritic.com/search/Digger/?category=2' };
+		const { now } = buildWhatsOn(
+			[
+				{ ...listing({ title: 'Digger', keys: ['2026-10-04T10:30'] }), metascore: null },
+				{ ...listing({ title: 'Digger', venue: 'BFI IMAX', keys: ['2026-10-04T14:30'] }), metascore },
+				listing({ title: 'Quiz Night', keys: ['2026-10-04T19:30'] }),
+			],
+			NOW,
+		);
+		expect(now.find(film => film.title === 'Digger').metascore).toEqual(metascore);
+		expect(now.find(film => film.title === 'Quiz Night').metascore).toBeNull();
+	});
+
 	it('returns empty sections for no listings', () => {
 		expect(buildWhatsOn([], NOW)).toEqual({ now: [], soon: [] });
 		expect(buildWhatsOn(undefined, NOW)).toEqual({ now: [], soon: [] });
