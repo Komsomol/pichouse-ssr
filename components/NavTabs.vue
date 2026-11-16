@@ -7,6 +7,12 @@
 			Movies
 		</NuxtLink>
 		<NuxtLink
+			to="/other-screens"
+			class="nav-tab"
+		>
+			Other screens
+		</NuxtLink>
+		<NuxtLink
 			to="/imax"
 			class="nav-tab"
 		>

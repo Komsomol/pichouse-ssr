@@ -112,3 +112,14 @@ export const IMAX_CONFIG = {
 	// Listing times are shown in London time whatever the build machine's zone
 	TIME_ZONE: 'Europe/London',
 };
+
+// "Other screens": every film at Finsbury Park outside Screen 1. Live
+// broadcasts (opera, ballet, NT Live, Exhibition on Screen) are left out:
+// Picturehouse tags all of them, and only them, "screen_arts" in
+// filter_class_names (30 of 87 films, checked 16 Nov 2026). Bar Trash has
+// no tag, so it goes by title.
+export const OTHER_SCREENS_CONFIG = {
+	CINEMA_ID: CINEMA_IDS.FINSBURY_PARK,
+	EXCLUDED_CLASS: 'screen_arts',
+	EXCLUDED_TITLE_PREFIXES: ['Bar Trash'],
+};

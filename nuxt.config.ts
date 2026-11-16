@@ -14,7 +14,7 @@ export default defineNuxtConfig({
 			// finds these once "/" has rendered, and "/" waits on a Picturehouse
 			// request that routinely takes 10s+, so the other tabs' API work sat
 			// idle behind it. Listed here they fetch during that wait.
-			routes: ['/', '/about', '/boxoffice', '/imax', '/trailers', '/whats-on'],
+			routes: ['/', '/about', '/boxoffice', '/imax', '/other-screens', '/trailers', '/whats-on'],
 		},
 	},
 	server: {

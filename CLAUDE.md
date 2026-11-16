@@ -2,9 +2,10 @@
 
 ## Overview
 
-Nuxt 3 static site with six tabs:
+Nuxt 3 static site with seven tabs:
 
 - **Movies** (`/`) - movies on **Screen 1** at Finsbury Park and Picturehouse Central, filtered to **weekday evenings (after 6 PM)** and **all weekend times**, with booking links and trailers.
+- **Other screens** (`/other-screens`) - every other film at **Finsbury Park** (Screens 2-7, Club Room), same time filter, one line of booking links per day. No live broadcasts, no Bar Trash, no films without a trailer.
 - **IMAX** (`/imax`) - every bookable screening at **BFI IMAX**, Waterloo, sold-out and past screenings removed. Data via Clusterflick (see BFI IMAX).
 - **What's on** (`/whats-on`) - every Screen 1 and IMAX film once, with poster, summary, trailer and a Book button per venue; playing this week first, coming soon below.
 - **Trailers** (`/trailers`) - official studio trailers from YouTube, last 30 days, filterable by studio.
@@ -24,7 +25,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (199 tests)
+- **Testing:** Vitest + happy-dom (206 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -85,7 +86,7 @@ so `movies.js` drops `show_times`, `movie_times` and `_screen1Showtimes` in its
 final map. That took the payload from 656KB to 54KB. A new field the page needs
 must be added to what survives, not by passing the whole feed object through.
 
-**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all six
+**Prerender routes are declared, not crawled.** `nuxt.config.ts` lists all seven
 routes under `nitro.prerender.routes`. Link crawling only discovers the other
 tabs once `/` has rendered, and `/` waits on a Picturehouse request that takes
 10-17s, so the Trailers and Box Office work used to queue behind it. Declared,
@@ -115,6 +116,9 @@ Do not remove the list.
 | `/server/api/whatson.js` | What's on orchestrator (reuses the Movies and IMAX endpoints) |
 | `/server/api/filterWhatsOn.js` | London-time keys, per-film merging, now/soon split |
 | `/pages/whats-on.vue` | What's on tab |
+| `/server/api/other-screens.js` | Other screens orchestrator (reuses the shared Picturehouse request) |
+| `/server/api/filterOtherScreens.js` | Finsbury Park, not Screen 1, time rule, live-broadcast and Bar Trash exclusion, per-day grouping |
+| `/pages/other-screens.vue` | Other screens tab |
 | `/server/utils/channels.js` | 50 studio YouTube channels |
 | `/server/utils/helpers.js` | Pure utilities incl. `normalizeTitleKey` (shared comparison key) |
 | `/server/utils/cache.js` | TTL-based caches |
@@ -275,6 +279,27 @@ per film per day) was rejected for exactly that reason; don't bring it back.
   takes the shared grid's `times` area - without it the venue lines land in
   the 96px poster column.
 
+## Other screens
+
+Asked for so films that never reach Screen 1 at Finsbury Park (the user's
+nearest) can still be found: on 16 Nov 2026, 72 of its 87 films never played
+Screen 1. Scope was chosen by the user: Finsbury Park only, every film's
+non-Screen 1 sessions (so a film also on Screen 1 shows its other times here),
+the Movies tab's time rule, no live broadcasts, no Bar Trash, no films without
+a trailer.
+
+- **Live broadcasts are excluded by Picturehouse's own tag**, `screen_arts` in
+  `filter_class_names`. Checked 16 Nov 2026: all 30 opera, ballet, NT Live and
+  Exhibition on Screen titles carry it, and no other film does. Do not switch
+  to title patterns. Bar Trash has no tag, so it is excluded by title prefix
+  (`OTHER_SCREENS_CONFIG.EXCLUDED_TITLE_PREFIXES`).
+- **No extra Picturehouse request.** The route calls
+  `fetchMoviesFromPicturehouse()`, which shares the Movies tab's in-flight POST.
+  It adds ~40-45 TMDb lookups, about 10s of a build.
+- **Times are grouped per day**, one line each, every time a booking link
+  naming its screen. With ~40 films a Book-next button alone hid most times,
+  and full showtime cards made the page very long.
+
 ## Metacritic scores
 
 Every tab shows a "Metacritic reviews" link when Metacritic has scored the film,
@@ -427,6 +452,7 @@ Test files:
 - `server/api/__tests__/filterBoxOffice.test.js`
 - `server/api/__tests__/filterImax.test.js`
 - `server/api/__tests__/filterWhatsOn.test.js`
+- `server/api/__tests__/filterOtherScreens.test.js`
 - `server/api/__tests__/tmdbApi.test.js`
 - `server/utils/__tests__/cache.test.js`
 - `server/utils/__tests__/helpers.test.js`
