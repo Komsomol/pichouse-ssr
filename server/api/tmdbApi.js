@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { tmdbCache } from '../utils/cache.js';
-import { cleanTitleForSearch, stripStrandPrefix, filterByExactTitle } from './filterMovies.js';
+import { cleanTitleForSearch, stripStrandPrefix, filterByExactTitle, filterBySharedWord } from './filterMovies.js';
 import { fetchMetascoreFromOMDB } from './omdbApi.js';
 
 const TMDB_TOKEN = process.env.TMDB_TOKEN;
@@ -148,7 +148,9 @@ export const fetchMovieFromTMDb = async (title, findLatest = false, currentRelea
 	};
 
 	try {
-		let movies = await searchMovies(cleanedTitle);
+		// TMDb can rank an unrelated film first ("Dune: Part One" led with
+		// Ramayana), so a result sharing no word with the title is not a match
+		let movies = filterBySharedWord(cleanedTitle, await searchMovies(cleanedTitle));
 
 		// Picturehouse files a screening under the season running it ("Out at
 		// Clapham: Beautiful Thing"), which TMDb cannot match. Retry once on the

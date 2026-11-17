@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeMovieTitle, filterMoviesByCinemaAndRemoveDuplicates, cleanTitleForSearch, stripStrandPrefix, filterByExactTitle } from '../filterMovies.js';
+import { sanitizeMovieTitle, filterMoviesByCinemaAndRemoveDuplicates, cleanTitleForSearch, stripStrandPrefix, filterByExactTitle, filterBySharedWord } from '../filterMovies.js';
 
 describe('cleanTitleForSearch', () => {
 	it('should remove 35mm format indicator', () => {
@@ -303,5 +303,36 @@ describe('filterMoviesByCinemaAndRemoveDuplicates', () => {
 		expect(titles).toContain('Cinema B Only');
 		expect(titles).toContain('Both Cinemas');
 		expect(titles).not.toContain('Neither Cinema');
+	});
+});
+
+describe('filterBySharedWord', () => {
+	it('drops a result sharing no word with the title, keeping TMDb\'s order', () => {
+		// TMDb's real answer for "Dune: Part One" on 17 Nov 2026
+		const results = [
+			{ id: 656908, title: 'Ramayana: Rise of a Legend', original_title: 'रामायणम्' },
+			{ id: 438631, title: 'Dune', original_title: 'Dune' },
+		];
+
+		expect(filterBySharedWord('Dune: Part One', results).map(movie => movie.id)).toEqual([438631]);
+	});
+
+	it('keeps a result that matches only on its original title', () => {
+		const results = [{ title: 'Diamonds', original_title: 'Diamanti' }];
+
+		expect(filterBySharedWord('Diamanti', results)).toEqual(results);
+	});
+
+	it('does not count "the", "of" and the like as a shared word', () => {
+		const results = [{ title: 'The Lord of the Rings', original_title: 'The Lord of the Rings' }];
+
+		expect(filterBySharedWord('The Taste of Things', results)).toEqual([]);
+	});
+
+	it('keeps everything when the title has no words to compare', () => {
+		const results = [{ title: 'Anything', original_title: 'Anything' }];
+
+		expect(filterBySharedWord('The', results)).toEqual(results);
+		expect(filterBySharedWord('Dune', undefined)).toEqual([]);
 	});
 });

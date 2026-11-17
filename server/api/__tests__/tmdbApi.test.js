@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import axios from 'axios';
-import { filterTrailerVideos, fetchVideosAndPosterFromTMDb, pickCurrentRelease } from '../tmdbApi.js';
+import { filterTrailerVideos, fetchMovieFromTMDb, fetchVideosAndPosterFromTMDb, pickCurrentRelease } from '../tmdbApi.js';
 
 vi.mock('axios');
 
@@ -137,6 +137,28 @@ describe('fetchVideosAndPosterFromTMDb', () => {
 		expect(logged).toHaveBeenCalledOnce();
 		expect(JSON.stringify(logged.mock.calls)).not.toContain('secret-token');
 		expect(logged.mock.calls[0][1]).toBe(404);
+	});
+});
+
+describe('fetchMovieFromTMDb', () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it('skips a first result that shares no word with the title', async () => {
+		// TMDb's real ranking for "Dune: Part One" on 17 Nov 2026
+		axios.get.mockResolvedValueOnce({
+			data: {
+				results: [
+					{ id: 656908, title: 'Ramayana: Rise of a Legend', original_title: 'रामायणम्', release_date: '2026-11-05' },
+					{ id: 438631, title: 'Dune', original_title: 'Dune', release_date: '2021-09-15' },
+				],
+			},
+		});
+
+		const movie = await fetchMovieFromTMDb('Dune: Part One (Re-Release 2026)');
+
+		expect(movie.id).toBe(438631);
 	});
 });
 

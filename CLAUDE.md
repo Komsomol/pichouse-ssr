@@ -25,7 +25,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (208 tests)
+- **Testing:** Vitest + happy-dom (213 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -184,6 +184,13 @@ turning "Madness: Take It or Leave It + Q&A with members of Madness" into
    **first** colon so a nested title survives ("CFS: Pompei: Below the Clouds").
 3. **`filterByExactTitle()`** holds the retry's results to an exact name,
    comparing both `title` and `original_title` via `normalizeTitleKey`.
+
+**`filterBySharedWord()`** guards the first search: results sharing no word
+with the searched title (ignoring the/a/an/of/and) are dropped before a pick.
+TMDb ranked "Ramayana: Rise of a Legend" above "Dune" for "Dune: Part One" on
+17 Nov 2026, so the Dune re-release showed Ramayana's poster and synopsis.
+Checked against all 231 non-broadcast feed titles that day: Dune was the only
+pick it changed.
 
 **The prefix strip is retry-only, and must stay that way.** 138 of ~292 titles
 contain a colon and most are genuine names - "Wicked: For Good" is the same

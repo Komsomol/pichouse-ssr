@@ -164,6 +164,36 @@ export const filterByExactTitle = (query, movies) => {
 	);
 };
 
+// Too common to show two titles are related
+const TITLE_STOP_WORDS = new Set(['the', 'a', 'an', 'of', 'and']);
+
+const titleWords = title =>
+	normalizeTitleKey(title).split(' ').filter(word => word && !TITLE_STOP_WORDS.has(word));
+
+/**
+ * Drops search results that share no word with the query.
+ *
+ * TMDb's search does not only match names. On 17 Nov 2026 "Dune: Part One"
+ * returned "Ramayana: Rise of a Legend" first and "Dune" second, so the Dune
+ * re-release showed Ramayana's poster, synopsis and trailer. A result with
+ * not one word of the title in either name is not that film. Checked against
+ * the whole feed that day: Dune was the only one of 231 titles affected.
+ *
+ * @param {string} query - Title searched for
+ * @param {Array} movies - TMDb search results, in TMDb's order
+ * @returns {Array} Results sharing at least one word with the query
+ */
+export const filterBySharedWord = (query, movies) => {
+	if (!Array.isArray(movies)) return [];
+
+	const queryWords = new Set(titleWords(query));
+	if (queryWords.size === 0) return movies;
+
+	return movies.filter(movie =>
+		[...titleWords(movie?.title), ...titleWords(movie?.original_title)]
+			.some(word => queryWords.has(word)));
+};
+
 /**
  * Removes unwanted strings and patterns from movie titles
  * @param {string} title - The original movie title
