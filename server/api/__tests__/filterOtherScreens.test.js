@@ -31,7 +31,8 @@ describe('selectOtherScreenFilms', () => {
 			]),
 		], NOW);
 
-		expect(result.days).toEqual([
+		expect(result.cinemas.map(cinema => cinema.name)).toEqual(['Finsbury Park']);
+		expect(result.cinemas[0].days).toEqual([
 			{
 				day: '2026-11-16',
 				label: 'Mon 16 Nov',
@@ -46,20 +47,47 @@ describe('selectOtherScreenFilms', () => {
 		expect(result.count).toBe(2);
 	});
 
-	it('leaves out Screen 1, other cinemas and past showings', () => {
+	it('leaves out Screen 1, cinemas other than Finsbury Park and Central, and past showings', () => {
 		const result = selectOtherScreenFilms([
 			film('Fjord', [
 				session('2026-11-16T19:00:00', 'Screen 1'),
-				session('2026-11-17T19:00:00', 'Screen 3', '022'),
+				session('2026-11-17T19:00:00', 'Screen 3', '016'), // The Gate
+				session('2026-11-17T19:00:00', 'Screen 1', '022'), // Central's Screen 1
 				session('2026-11-15T19:00:00'), // yesterday
 				session('2026-11-17T20:00:00', 'Screen 3'),
 			]),
 		], NOW);
 
 		expect(result).toHaveLength(1);
-		expect(result[0].days.flatMap(day => day.times)).toEqual([
+		expect(result[0].cinemas.flatMap(cinema => cinema.days).flatMap(day => day.times)).toEqual([
 			expect.objectContaining({ time: '20:00', screen: 'Screen 3' }),
 		]);
+	});
+
+	it('lists Central after Finsbury Park, with Central booking links', () => {
+		const [result] = selectOtherScreenFilms([
+			film('Hamnet', [
+				session('2026-11-18T19:00:00', 'KIA Screen 2', '022'),
+				session('2026-11-19T20:00:00', 'Screen 5'),
+			]),
+		], NOW);
+
+		expect(result.cinemas.map(cinema => [cinema.name, cinema.days.map(day => day.label)])).toEqual([
+			['Finsbury Park', ['Thu 19 Nov']],
+			['Picturehouse Central', ['Wed 18 Nov']],
+		]);
+		expect(result.cinemas[1].days[0].times[0].url)
+			.toBe('https://web.picturehouses.com/order/showtimes/022-KIA Screen 2-2026-11-18T19:00:00/seats');
+		expect(result.nextKey).toBe('2026-11-18T19:00');
+		expect(result.count).toBe(2);
+	});
+
+	it('lists a Central-only film', () => {
+		const [result] = selectOtherScreenFilms([
+			film('Sirat', [session('2026-11-17T18:30:00', 'Screen 7', '022')]),
+		], NOW);
+
+		expect(result.cinemas.map(cinema => cinema.name)).toEqual(['Picturehouse Central']);
 	});
 
 	it('drops a film that only plays Screen 1', () => {

@@ -22,10 +22,10 @@
 		<section class="about-section">
 			<h2>The Other screens tab</h2>
 			<p>
-				Everything else at <strong>Finsbury Park</strong>: films on Screens 2 to
-				7 and the Club Room, with the same time filter. Live opera, ballet and
-				theatre broadcasts and Bar Trash screenings are left out, as are films
-				with no trailer.
+				Everything else at <strong>Finsbury Park</strong> and
+				<strong>Picturehouse Central</strong>: films on their other screens, with
+				the same time filter. Live opera, ballet and theatre broadcasts and Bar
+				Trash screenings are left out, as are films with no trailer.
 			</p>
 		</section>
 

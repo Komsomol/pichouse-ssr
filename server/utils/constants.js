@@ -119,7 +119,8 @@ export const IMAX_CONFIG = {
 // filter_class_names (30 of 87 films, checked 16 Nov 2026). Bar Trash has
 // no tag, so it goes by title.
 export const OTHER_SCREENS_CONFIG = {
-	CINEMA_ID: CINEMA_IDS.FINSBURY_PARK,
+	// Display order: Finsbury Park (nearest) first
+	CINEMA_IDS: [CINEMA_IDS.FINSBURY_PARK, CINEMA_IDS.PICTUREHOUSE_CENTRAL],
 	EXCLUDED_CLASS: 'screen_arts',
 	EXCLUDED_TITLE_PREFIXES: ['Bar Trash'],
 };

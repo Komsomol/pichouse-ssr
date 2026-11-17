@@ -2,12 +2,13 @@
 	<div class="container">
 		<!-- The tab names the page; the heading stays for screen readers only -->
 		<h1 class="visually-hidden">
-			Other screens at Finsbury Park
+			Other screens at Finsbury Park and Picturehouse Central
 		</h1>
 
 		<p class="other-note">
-			Films at Finsbury Park outside Screen 1: weekday evenings from 6pm and
-			any time at weekends. Live opera, ballet and theatre broadcasts are left out.
+			Films at Finsbury Park and Picturehouse Central outside Screen 1: weekday
+			evenings from 6pm and any time at weekends. Live opera, ballet and theatre
+			broadcasts are left out.
 		</p>
 
 		<div
@@ -92,25 +93,36 @@
 						{{ film.overview }}
 					</p>
 
-					<!-- One line per day; each time is the booking link -->
-					<ul class="other-days">
-						<li
-							v-for="day in film.days"
-							:key="day.day"
-							class="other-day"
+					<!-- Per cinema, one line per day; each time is the booking link -->
+					<div class="other-cinemas">
+						<section
+							v-for="cinema in film.cinemas"
+							:key="cinema.id"
+							class="other-cinema"
 						>
-							<span class="other-day-label">{{ day.label }}</span>
-							<a
-								v-for="time in day.times"
-								:key="time.url"
-								:href="time.url"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="other-time"
-								:aria-label="`Book ${film.title}, ${day.label} at ${time.time}, ${time.screen}`"
-							>{{ time.time }} <span>{{ time.screen }}</span></a>
-						</li>
-					</ul>
+							<h3 class="other-cinema-name">
+								{{ cinema.name }}
+							</h3>
+							<ul class="other-days">
+								<li
+									v-for="day in cinema.days"
+									:key="day.day"
+									class="other-day"
+								>
+									<span class="other-day-label">{{ day.label }}</span>
+									<a
+										v-for="time in day.times"
+										:key="time.url"
+										:href="time.url"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="other-time"
+										:aria-label="`Book ${film.title}, ${cinema.name}, ${day.label} at ${time.time}, ${time.screen}`"
+									>{{ time.time }} <span>{{ time.screen }}</span></a>
+								</li>
+							</ul>
+						</section>
+					</div>
 				</div>
 			</article>
 		</template>
@@ -119,7 +131,7 @@
 			v-else
 			class="error-container"
 		>
-			<p>Nothing on the other screens at Finsbury Park right now.</p>
+			<p>Nothing on the other screens at Finsbury Park or Central right now.</p>
 		</div>
 
 		<VideoModal
@@ -141,7 +153,7 @@ useHead({
 		{
 			name: 'description',
 			content:
-				'Films on the other screens at Picturehouse Finsbury Park, with trailers and booking links.',
+				'Films on the other screens at Picturehouse Finsbury Park and Picturehouse Central, with trailers and booking links.',
 		},
 	],
 });
@@ -197,9 +209,24 @@ const openModal = (videoKey) => {
 }
 
 /* On phones .movie-info is display:contents (see MovieListStyles), so the
-   day lines must claim the full-width row the Movies tab uses for times */
-.other-days {
+   cinema blocks must claim the full-width row the Movies tab uses for times */
+.other-cinemas {
   grid-area: times;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.other-cinema-name {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--letter-soft);
+}
+
+.other-days {
   display: flex;
   flex-direction: column;
   margin: 0;
