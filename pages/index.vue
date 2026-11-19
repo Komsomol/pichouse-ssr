@@ -127,33 +127,39 @@
 						{{ movie.overview }}
 					</p>
 
-					<!-- Screen 1 Showtimes -->
+					<!-- Screen 1 Showtimes, one group per cinema, Finsbury Park first -->
 					<div
 						v-if="movie.screen1Showtimes && movie.screen1Showtimes.length"
 						class="movie-showtimes"
 					>
-						<div class="showtimes-grid">
-							<!-- The whole showtime is the booking link -->
-							<a
-								v-for="showtime in movie.screen1Showtimes"
-								:key="showtime.SessionId"
-								:href="showtime.bookingUrl"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="showtime-card"
-								:aria-label="`Book ${showtime.cinemaName}, ${showtime.date}, ${showtime.time_format}`"
-							>
-								<div class="showtime-cinema">
-									{{ showtime.cinemaName }}
-								</div>
-								<div class="showtime-date">
-									{{ showtime.date }}
-								</div>
-								<div class="showtime-time">
-									{{ showtime.time_format }}
-								</div>
-							</a>
-						</div>
+						<section
+							v-for="group in groupShowtimesByCinema(movie.screen1Showtimes)"
+							:key="group.cinemaId"
+							class="showtime-group"
+						>
+							<h4 class="showtime-group-name">
+								{{ group.cinemaName }}
+							</h4>
+							<div class="showtimes-grid">
+								<!-- The whole showtime is the booking link -->
+								<a
+									v-for="showtime in group.showtimes"
+									:key="showtime.SessionId"
+									:href="showtime.bookingUrl"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="showtime-card"
+									:aria-label="`Book ${showtime.cinemaName}, ${showtime.date}, ${showtime.time_format}`"
+								>
+									<div class="showtime-date">
+										{{ showtime.date }}
+									</div>
+									<div class="showtime-time">
+										{{ showtime.time_format }}
+									</div>
+								</a>
+							</div>
+						</section>
 					</div>
 				</div>
 			</div>
@@ -198,6 +204,7 @@
 import { ref } from 'vue';
 import useMovieList from '~/components/movies/MovieListScript.js'; // Adjust the import path accordingly
 import VideoModal from '~/components/movies/VideoModal.vue'; // Import the modal component
+import { groupShowtimesByCinema } from '~/components/movies/groupShowtimes.js';
 
 useHead({
 	title: 'Screen 1 - PicHouse',
@@ -246,3 +253,19 @@ const goToPageAndScroll = (pageNumber) => {
 </script>
 
 <style src="~/components/movies/MovieListStyles.css"></style>
+
+<style scoped>
+/* Each cinema's times under its own heading, with clear space between */
+.showtime-group + .showtime-group {
+  margin-top: var(--space-lg);
+}
+
+.showtime-group-name {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--letter);
+}
+</style>

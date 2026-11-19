@@ -25,7 +25,7 @@ incident log use that name.
 - **Hosting:** Cloudflare Pages via Wrangler
 - **CI/CD:** GitHub Actions (checks at 07:37 and 21:37 UTC)
 - **UI:** Vue 3 Composition API
-- **Testing:** Vitest + happy-dom (213 tests)
+- **Testing:** Vitest + happy-dom (216 tests)
 - **Linting:** ESLint with @nuxt/eslint-config
 - **APIs:** Picturehouse (Vista Cinema), TMDb, OMDB, YouTube Data API v3, Box Office Mojo (scraped with cheerio)
 - **Dependencies:** axios, cheerio, normalize.css, nuxt, p-limit, vue. No dotenv -
@@ -397,6 +397,12 @@ dark to read on black. Keep it a plain inversion rather than a separate palette.
 - **The showtime is the booking link.** Each `.showtime-card` is an `<a>` to
   the booking URL with an `aria-label` naming cinema, date and time. There is
   no separate "Book Tickets" button.
+- **Movies tab times are grouped by cinema**, Finsbury Park then Central
+  (`groupShowtimesByCinema` in `components/movies/groupShowtimes.js`, order
+  from `TARGET_CINEMA_IDS`), each under its own heading. Asked for on 19 Nov
+  2026: one mixed grid with a small cinema label per card was hard to scan.
+  Grouping happens on the page so `/api/movies`, which What's on also reads,
+  keeps its shape.
 - **Page `<h1>`s are visually hidden** (`.visually-hidden` in
   `MovieListStyles.css`). The tab bar already names the page, but the heading
   stays in the DOM for screen readers and search engines. Do not delete them.
@@ -469,6 +475,7 @@ Test files:
 - `server/utils/__tests__/helpers.test.js`
 - `server/utils/__tests__/env-validation.test.js`
 - `components/movies/__tests__/MovieListScript.test.js`
+- `components/movies/__tests__/groupShowtimes.test.js`
 
 ## Code Style
 
